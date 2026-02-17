@@ -6,7 +6,6 @@ import {
   Plus,
   UtensilsCrossed,
   BarChart3,
-  Settings,
   Share2,
   SlidersHorizontal,
   ChevronRight,
@@ -34,9 +33,9 @@ const STEPS = [
     accent: "bg-amber-100 text-amber-600",
   },
   {
-    Icon: Settings,
-    title: "Customize Your Ratings",
-    body: "Head to Settings to set up rating categories (like Taste, Value, Presentation) and adjust their weights for each food.",
+    Icon: SlidersHorizontal,
+    title: "Make Rankings Yours",
+    body: "In Settings, set up rating categories like Taste, Value, and Presentation — then adjust their weights to match what matters most to you. Your rankings reflect your priorities, so when friends compare scores, every list tells a different story.",
     accent: "bg-blue-100 text-blue-600",
   },
   {
@@ -44,12 +43,6 @@ const STEPS = [
     title: "Track Your Trends",
     body: "Insights shows your rating trends, top spots, spending patterns, and more — all in charts.",
     accent: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    Icon: SlidersHorizontal,
-    title: "Make Rankings Yours",
-    body: "Adjust the weight of each rating category to match what matters most to you. Your rankings reflect your priorities — so when friends compare scores, every list tells a different story.",
-    accent: "bg-rose-100 text-rose-600",
   },
   {
     Icon: Share2,
