@@ -1,0 +1,591 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { MapPin, Plus, X } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { StarRating } from "./star-rating";
+import { calculateCompositeScore, generateMapsLink } from "@/lib/utils";
+import type {
+  PassionFood,
+  Subtype,
+  RatingCategory,
+  Entry,
+} from "@/lib/supabase/types";
+
+interface ExistingRating {
+  rating_category_id: string;
+  score: number;
+}
+
+interface EntryFormProps {
+  userId: string;
+  passionFood: PassionFood;
+  passionFoods: PassionFood[];
+  subtypes: Subtype[];
+  ratingCategories: RatingCategory[];
+  existingEntry?: Entry;
+  existingRatings?: ExistingRating[];
+}
+
+export function EntryForm({
+  userId,
+  passionFood: initialPassionFood,
+  passionFoods,
+  subtypes: initialSubtypes,
+  ratingCategories,
+  existingEntry,
+  existingRatings,
+}: EntryFormProps) {
+  const router = useRouter();
+  const isEditing = !!existingEntry;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  // Form state -- pre-populate from existing entry if editing
+  const [selectedFoodId, setSelectedFoodId] = useState(
+    existingEntry?.passion_food_id ?? initialPassionFood.id
+  );
+  const [restaurantName, setRestaurantName] = useState(
+    existingEntry?.restaurant_name ?? ""
+  );
+  const [city, setCity] = useState(existingEntry?.city ?? "");
+  const [address, setAddress] = useState(existingEntry?.address ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(
+    existingEntry?.phone_number ?? ""
+  );
+  const [locationNotes, setLocationNotes] = useState(
+    existingEntry?.location_notes ?? ""
+  );
+  const [subtypeId, setSubtypeId] = useState<string>(
+    existingEntry?.subtype_id ?? ""
+  );
+  const [quantity, setQuantity] = useState(
+    existingEntry?.quantity ? String(existingEntry.quantity) : ""
+  );
+  const [cost, setCost] = useState(
+    existingEntry?.cost ? String(existingEntry.cost) : ""
+  );
+  const [notes, setNotes] = useState(existingEntry?.notes ?? "");
+  const [eatenAt, setEatenAt] = useState(
+    existingEntry
+      ? new Date(existingEntry.eaten_at).toISOString().slice(0, 16)
+      : new Date().toISOString().slice(0, 16)
+  );
+
+  // Rating state
+  const [ratings, setRatings] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    ratingCategories.forEach((cat) => {
+      const existing = existingRatings?.find(
+        (r) => r.rating_category_id === cat.id
+      );
+      initial[cat.id] = existing?.score ?? 0;
+    });
+    return initial;
+  });
+
+  // Subtypes state
+  const [subtypes, setSubtypes] = useState(initialSubtypes);
+  const [showAddSubtype, setShowAddSubtype] = useState(false);
+  const [newSubtypeName, setNewSubtypeName] = useState("");
+
+  // Composite score
+  const ratedCategories = ratingCategories
+    .filter((cat) => ratings[cat.id] > 0)
+    .map((cat) => ({ score: ratings[cat.id], weight: Number(cat.weight) }));
+
+  const compositeScore =
+    ratedCategories.length > 0
+      ? calculateCompositeScore(ratedCategories)
+      : null;
+
+  const allRated = ratingCategories.every((cat) => ratings[cat.id] > 0);
+
+  const hasLocationDetails = !!(address || phoneNumber || locationNotes);
+
+  async function handleAddSubtype() {
+    if (!newSubtypeName.trim()) return;
+
+    const supabase = createClient();
+    const { data, error: subError } = await supabase
+      .from("subtypes")
+      .insert({
+        passion_food_id: selectedFoodId,
+        name: newSubtypeName.trim(),
+        sort_order: subtypes.length,
+      })
+      .select()
+      .single();
+
+    if (subError || !data) {
+      setError(subError?.message ?? "Failed to add subtype");
+      return;
+    }
+
+    setSubtypes([...subtypes, data]);
+    setSubtypeId(data.id);
+    setNewSubtypeName("");
+    setShowAddSubtype(false);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    if (!restaurantName.trim() || !city.trim()) {
+      setError("Restaurant name and city are required");
+      setLoading(false);
+      return;
+    }
+
+    if (!allRated) {
+      setError("Please rate all categories");
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+
+    const entryData = {
+      passion_food_id: selectedFoodId,
+      user_id: userId,
+      restaurant_name: restaurantName.trim(),
+      city: city.trim(),
+      address: address.trim() || null,
+      phone_number: phoneNumber.trim() || null,
+      location_notes: locationNotes.trim() || null,
+      subtype_id: subtypeId || null,
+      quantity: quantity ? parseInt(quantity) : null,
+      cost: cost ? parseFloat(cost) : null,
+      notes: notes.trim() || null,
+      eaten_at: new Date(eatenAt).toISOString(),
+    };
+
+    if (isEditing) {
+      // UPDATE existing entry
+      const { error: updateError } = await supabase
+        .from("entries")
+        .update(entryData)
+        .eq("id", existingEntry.id);
+
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Delete old ratings, insert new ones
+      await supabase
+        .from("entry_ratings")
+        .delete()
+        .eq("entry_id", existingEntry.id);
+
+      const ratingsToInsert = ratingCategories.map((cat) => ({
+        entry_id: existingEntry.id,
+        rating_category_id: cat.id,
+        score: ratings[cat.id],
+      }));
+
+      const { error: ratingsError } = await supabase
+        .from("entry_ratings")
+        .insert(ratingsToInsert);
+
+      if (ratingsError) {
+        setError(ratingsError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setLoading(false);
+
+      setTimeout(() => {
+        router.push("/dashboard?success=updated");
+        router.refresh();
+      }, 1000);
+    } else {
+      // INSERT new entry
+      const { data: entry, error: entryError } = await supabase
+        .from("entries")
+        .insert(entryData)
+        .select()
+        .single();
+
+      if (entryError || !entry) {
+        setError(entryError?.message ?? "Failed to create entry");
+        setLoading(false);
+        return;
+      }
+
+      const ratingsToInsert = ratingCategories.map((cat) => ({
+        entry_id: entry.id,
+        rating_category_id: cat.id,
+        score: ratings[cat.id],
+      }));
+
+      const { error: ratingsError } = await supabase
+        .from("entry_ratings")
+        .insert(ratingsToInsert);
+
+      if (ratingsError) {
+        setError(ratingsError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(true);
+      setLoading(false);
+
+      setTimeout(() => {
+        router.push("/dashboard?success=1");
+        router.refresh();
+      }, 1200);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center">
+        <div className="text-5xl mb-4">
+          {initialPassionFood.theme_key === "burritos"
+            ? "🌯"
+            : initialPassionFood.theme_key === "pizza"
+              ? "🍕"
+              : initialPassionFood.theme_key === "tacos"
+                ? "🌮"
+                : initialPassionFood.theme_key === "ramen"
+                  ? "🍜"
+                  : initialPassionFood.theme_key === "sushi"
+                    ? "🍣"
+                    : initialPassionFood.theme_key === "burgers"
+                      ? "🍔"
+                      : initialPassionFood.theme_key === "hotdogs"
+                        ? "🌭"
+                        : initialPassionFood.theme_key === "wings"
+                          ? "🍗"
+                          : initialPassionFood.theme_key === "icecream"
+                            ? "🍦"
+                            : initialPassionFood.theme_key === "pho"
+                              ? "🍲"
+                              : "🍽️"}
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          {isEditing ? "Chomp updated!" : "Chomp logged!"}
+        </h2>
+        <p className="text-gray-500">
+          {compositeScore !== null && (
+            <span className="text-orange-600 font-semibold">
+              {compositeScore.toFixed(1)} / 5.0
+            </span>
+          )}
+          {" "}at {restaurantName}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Passion food selector (if multiple and not editing) */}
+      {!isEditing && passionFoods.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {passionFoods.map((food) => (
+            <button
+              key={food.id}
+              type="button"
+              onClick={() => setSelectedFoodId(food.id)}
+              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                food.id === selectedFoodId
+                  ? "bg-orange-500 text-white"
+                  : "bg-white text-gray-600 border border-gray-200"
+              }`}
+            >
+              {food.name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Location section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+          Location
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="restaurant"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Restaurant Name *
+            </label>
+            <input
+              id="restaurant"
+              type="text"
+              value={restaurantName}
+              onChange={(e) => setRestaurantName(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              placeholder="e.g., Taqueria El Farolito"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="city"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              City *
+            </label>
+            <input
+              id="city"
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              placeholder="e.g., San Francisco"
+            />
+          </div>
+        </div>
+
+        {restaurantName.trim() && city.trim() && (
+          <a
+            href={generateMapsLink(restaurantName, city)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600"
+          >
+            <MapPin size={14} />
+            View on Google Maps
+          </a>
+        )}
+
+        <details className="group" open={hasLocationDetails || undefined}>
+          <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 select-none">
+            + Add address, phone, or notes about location
+          </summary>
+          <div className="mt-3 space-y-3">
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              placeholder="Address (optional)"
+            />
+            <input
+              type="text"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              placeholder="Phone number (optional)"
+            />
+            <input
+              type="text"
+              value={locationNotes}
+              onChange={(e) => setLocationNotes(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              placeholder="Hours, tips, reservations... (optional)"
+            />
+          </div>
+        </details>
+      </div>
+
+      {/* Details section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+          Details
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label
+              htmlFor="subtype"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Order
+            </label>
+            {!showAddSubtype ? (
+              <div className="flex gap-2">
+                <select
+                  id="subtype"
+                  value={subtypeId}
+                  onChange={(e) => setSubtypeId(e.target.value)}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 bg-white"
+                >
+                  <option value="">None</option>
+                  {subtypes.map((st) => (
+                    <option key={st.id} value={st.id}>
+                      {st.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setShowAddSubtype(true)}
+                  className="px-3 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-500 hover:bg-orange-50 transition-colors"
+                  title="Add new order"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSubtypeName}
+                  onChange={(e) => setNewSubtypeName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddSubtype();
+                    }
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-orange-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                  placeholder="e.g., Carne Asada"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={handleAddSubtype}
+                  className="px-3 py-2.5 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddSubtype(false);
+                    setNewSubtypeName("");
+                  }}
+                  className="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="quantity"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Quantity
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              placeholder="How many?"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="cost"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Cost ($)
+            </label>
+            <input
+              id="cost"
+              type="number"
+              min="0"
+              step="0.01"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label
+            htmlFor="eatenAt"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
+            When
+          </label>
+          <input
+            id="eatenAt"
+            type="datetime-local"
+            value={eatenAt}
+            onChange={(e) => setEatenAt(e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
+          />
+        </div>
+      </div>
+
+      {/* Rating section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            Rating
+          </h3>
+          {compositeScore !== null && (
+            <div className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+              {compositeScore.toFixed(1)} / 5.0
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3">
+          {ratingCategories.map((cat) => (
+            <StarRating
+              key={cat.id}
+              label={cat.name}
+              weight={Number(cat.weight)}
+              value={ratings[cat.id]}
+              onChange={(score) =>
+                setRatings((prev) => ({ ...prev, [cat.id]: score }))
+              }
+            />
+          ))}
+        </div>
+
+        {!allRated && ratedCategories.length > 0 && (
+          <p className="text-xs text-gray-400">
+            Rate all categories to see your composite score
+          </p>
+        )}
+      </div>
+
+      {/* Notes */}
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-2">
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+          Notes
+        </h3>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
+          placeholder="How was the experience? Anything notable?"
+        />
+      </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3">
+          {error}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-lg"
+      >
+        {loading ? "Saving..." : isEditing ? "Update Entry" : "Log Entry"}
+      </button>
+    </form>
+  );
+}
