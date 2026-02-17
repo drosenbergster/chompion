@@ -30,7 +30,7 @@ export default async function NewEntryPage({
     .order("is_default", { ascending: false });
 
   if (!passionFoods || passionFoods.length === 0) {
-    redirect("/onboarding");
+    redirect("/dashboard");
   }
 
   // If "from" param is set, pre-fill from a previous entry

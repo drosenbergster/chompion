@@ -32,7 +32,7 @@ export default async function SettingsPage({
     .order("is_default", { ascending: false });
 
   if (!passionFoods || passionFoods.length === 0) {
-    redirect("/onboarding");
+    redirect("/dashboard");
   }
 
   const selectedFood = params.food

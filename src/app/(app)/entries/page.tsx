@@ -30,7 +30,7 @@ export default async function EntriesPage({
     .eq("is_default", true)
     .single();
 
-  if (!passionFood) redirect("/onboarding");
+  if (!passionFood) redirect("/dashboard");
 
   const { data: allEntries } = await supabase
     .from("entries")

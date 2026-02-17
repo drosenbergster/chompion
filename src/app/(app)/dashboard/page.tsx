@@ -61,22 +61,39 @@ export default async function DashboardPage({
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("has_seen_tutorial")
-    .eq("id", user.id)
-    .single();
-
-  const showTutorial = profile?.has_seen_tutorial === false;
-
   const { data: passionFoods } = await supabase
     .from("passion_foods")
     .select("*")
     .eq("user_id", user.id)
     .order("is_default", { ascending: false });
 
-  if (!passionFoods || passionFoods.length === 0) {
-    redirect("/onboarding");
+  const hasNoFoods = !passionFoods || passionFoods.length === 0;
+
+  // Show tutorial for brand-new users who haven't started a list yet
+  if (hasNoFoods) {
+    return (
+      <div className="space-y-6 pb-20 md:pb-8">
+        <WelcomeTutorial />
+
+        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-10 text-center animate-fade-in">
+          <div className="text-6xl mb-4">🍽️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Pick your food
+          </h2>
+          <p className="text-gray-500 mb-6 max-w-sm mx-auto leading-relaxed">
+            What do you love eating? Pick a food to start tracking your
+            favorite spots and ratings.
+          </p>
+          <Link
+            href="/passion-foods"
+            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-xl transition-colors text-lg"
+          >
+            <Plus size={20} />
+            Start Your First List
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const selectedFood = params.food
@@ -161,7 +178,6 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6 pb-20 md:pb-8">
-      {showTutorial && <WelcomeTutorial />}
       {successMessage && <SuccessToast message={successMessage} />}
 
       {/* Food tabs */}

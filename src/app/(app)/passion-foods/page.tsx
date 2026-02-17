@@ -16,10 +16,6 @@ export default async function PassionFoodsPage() {
     .eq("user_id", user.id)
     .order("is_default", { ascending: false });
 
-  if (!passionFoods || passionFoods.length === 0) {
-    redirect("/onboarding");
-  }
-
   // Get entry counts per food
   const { data: entries } = await supabase
     .from("entries")
@@ -36,7 +32,7 @@ export default async function PassionFoodsPage() {
     <div className="pb-20 md:pb-8">
       <MyFoodsManager
         userId={user.id}
-        initialFoods={passionFoods}
+        initialFoods={passionFoods ?? []}
         entryCounts={entryCounts}
       />
     </div>

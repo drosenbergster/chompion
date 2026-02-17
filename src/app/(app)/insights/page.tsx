@@ -19,7 +19,7 @@ export default async function InsightsPage() {
     .eq("is_default", true)
     .single();
 
-  if (!passionFood) redirect("/onboarding");
+  if (!passionFood) redirect("/dashboard");
 
   const { data: entries } = await supabase
     .from("entries")

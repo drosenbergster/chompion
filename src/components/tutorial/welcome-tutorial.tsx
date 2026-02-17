@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   Plus,
   UtensilsCrossed,
@@ -58,16 +57,8 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  async function dismiss() {
+  function dismiss() {
     setClosing(true);
-    const supabase = createClient();
-    await supabase
-      .from("profiles")
-      .update({ has_seen_tutorial: true })
-      .eq(
-        "id",
-        (await supabase.auth.getUser()).data.user?.id ?? ""
-      );
     onComplete?.();
   }
 
