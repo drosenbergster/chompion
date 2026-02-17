@@ -35,7 +35,7 @@ const STEPS = [
   {
     Icon: SlidersHorizontal,
     title: "Make Rankings Yours",
-    body: "In Settings, set up rating categories like Taste, Value, and Presentation — then adjust their weights to match what matters most to you. Your rankings reflect your priorities, so when friends compare scores, every list tells a different story.",
+    body: "Set up your own rating categories in Settings and adjust their weights to match what matters most to you. Your rankings reflect your priorities, so when friends compare scores, every list tells a different story.",
     accent: "bg-blue-100 text-blue-600",
   },
   {
