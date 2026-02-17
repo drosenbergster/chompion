@@ -87,7 +87,7 @@ export function MyFoodsManager({
       .single();
 
     if (createError || !newFood) {
-      setError(createError?.message ?? "Failed to add food");
+      setError(createError?.message ?? "Failed to add list");
       setLoading(false);
       return;
     }
@@ -178,7 +178,7 @@ export function MyFoodsManager({
     router.refresh();
 
     if (remaining.length === 0) {
-      router.push("/onboarding");
+      router.push("/dashboard");
     }
   }
 
@@ -186,9 +186,9 @@ export function MyFoodsManager({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Foods</h1>
+          <h1 className="text-2xl font-bold text-gray-900">My Lists</h1>
           <p className="text-sm text-gray-500">
-            Manage your tracked food obsessions
+            Manage your chomp tracking lists
           </p>
         </div>
         <button
@@ -196,7 +196,7 @@ export function MyFoodsManager({
           className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
         >
           <Plus size={16} />
-          Add Food
+          Add List
         </button>
       </div>
 
@@ -288,7 +288,7 @@ export function MyFoodsManager({
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">
-                Add a New Food
+                Add a New List
               </h2>
               <button
                 onClick={() => {
@@ -344,7 +344,7 @@ export function MyFoodsManager({
                   type="text"
                   value={customFood}
                   onChange={(e) => setCustomFood(e.target.value)}
-                  placeholder="Enter your food obsession..."
+                  placeholder="Enter a food to track..."
                   autoFocus
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                   onKeyDown={(e) => {
@@ -372,7 +372,7 @@ export function MyFoodsManager({
               }
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
             >
-              {loading ? "Adding..." : "Add Food"}
+              {loading ? "Adding..." : "Add List"}
             </button>
           </div>
         </div>
