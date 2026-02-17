@@ -10,6 +10,12 @@ export default async function NewEntryPage() {
 
   if (!user) redirect("/login");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .single();
+
   // Get user's passion foods
   const { data: passionFoods } = await supabase
     .from("passion_foods")
@@ -45,6 +51,7 @@ export default async function NewEntryPage() {
       </p>
       <EntryForm
         userId={user.id}
+        username={profile?.username}
         passionFood={defaultFood}
         passionFoods={passionFoods}
         subtypes={subtypes ?? []}

@@ -17,6 +17,12 @@ export default async function EditEntryPage({
 
   if (!user) redirect("/login");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .single();
+
   // Get the entry
   const { data: entry } = await supabase
     .from("entries")
@@ -70,7 +76,7 @@ export default async function EditEntryPage({
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors mb-4"
       >
         <ArrowLeft size={16} />
-        Back to entry
+        Back to chomp
       </Link>
 
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Edit Chomp</h1>
@@ -81,6 +87,7 @@ export default async function EditEntryPage({
 
       <EntryForm
         userId={user.id}
+        username={profile?.username}
         passionFood={passionFood}
         passionFoods={passionFoods ?? [passionFood]}
         subtypes={subtypes ?? []}

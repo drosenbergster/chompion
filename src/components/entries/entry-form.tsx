@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, X } from "lucide-react";
+import { MapPin, Plus, X, Share2, ArrowRight, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { calculateCompositeScore, generateMapsLink } from "@/lib/utils";
@@ -20,6 +20,7 @@ interface ExistingRating {
 
 interface EntryFormProps {
   userId: string;
+  username?: string;
   passionFood: PassionFood;
   passionFoods: PassionFood[];
   subtypes: Subtype[];
@@ -30,6 +31,7 @@ interface EntryFormProps {
 
 export function EntryForm({
   userId,
+  username,
   passionFood: initialPassionFood,
   passionFoods,
   subtypes: initialSubtypes,
@@ -104,6 +106,7 @@ export function EntryForm({
   const allRated = ratingCategories.every((cat) => ratings[cat.id] > 0);
 
   const hasLocationDetails = !!(address || phoneNumber || locationNotes);
+  const hasEntryDetails = !!(subtypeId || quantity || cost || notes);
 
   async function handleAddSubtype() {
     if (!newSubtypeName.trim()) return;
@@ -201,11 +204,6 @@ export function EntryForm({
 
       setSuccess(true);
       setLoading(false);
-
-      setTimeout(() => {
-        router.push("/dashboard?success=updated");
-        router.refresh();
-      }, 1000);
     } else {
       // INSERT new entry
       const { data: entry, error: entryError } = await supabase
@@ -238,51 +236,103 @@ export function EntryForm({
 
       setSuccess(true);
       setLoading(false);
-
-      setTimeout(() => {
-        router.push("/dashboard?success=1");
-        router.refresh();
-      }, 1200);
     }
+  }
+
+  const [copied, setCopied] = useState(false);
+
+  const FOOD_EMOJIS: Record<string, string> = {
+    burritos: "🌯",
+    pizza: "🍕",
+    tacos: "🌮",
+    ramen: "🍜",
+    sushi: "🍣",
+    burgers: "🍔",
+    hotdogs: "🌭",
+    wings: "🍗",
+    icecream: "🍦",
+    pho: "🍲",
+    generic: "🍽️",
+  };
+
+  const foodEmoji =
+    FOOD_EMOJIS[initialPassionFood.theme_key] ?? FOOD_EMOJIS.generic;
+
+  async function handleShare() {
+    const profileUrl = username
+      ? `${window.location.origin}/u/${username}`
+      : window.location.origin;
+
+    const shareText = `${compositeScore !== null ? compositeScore.toFixed(1) + "/5.0 " : ""}${initialPassionFood.name} at ${restaurantName} — tracked on Chompion!`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "My Chompion Rating",
+          text: shareText,
+          url: profileUrl,
+        });
+        return;
+      } catch {
+        // User cancelled or API unavailable, fall through to copy
+      }
+    }
+
+    await navigator.clipboard.writeText(`${shareText}\n${profileUrl}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleGoToDashboard() {
+    router.push(
+      `/dashboard?success=${isEditing ? "updated" : "1"}`
+    );
+    router.refresh();
   }
 
   if (success) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center">
-        <div className="text-5xl mb-4">
-          {initialPassionFood.theme_key === "burritos"
-            ? "🌯"
-            : initialPassionFood.theme_key === "pizza"
-              ? "🍕"
-              : initialPassionFood.theme_key === "tacos"
-                ? "🌮"
-                : initialPassionFood.theme_key === "ramen"
-                  ? "🍜"
-                  : initialPassionFood.theme_key === "sushi"
-                    ? "🍣"
-                    : initialPassionFood.theme_key === "burgers"
-                      ? "🍔"
-                      : initialPassionFood.theme_key === "hotdogs"
-                        ? "🌭"
-                        : initialPassionFood.theme_key === "wings"
-                          ? "🍗"
-                          : initialPassionFood.theme_key === "icecream"
-                            ? "🍦"
-                            : initialPassionFood.theme_key === "pho"
-                              ? "🍲"
-                              : "🍽️"}
+      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-10 text-center animate-fade-in space-y-5">
+        <div className="text-5xl animate-scale-pop">{foodEmoji}</div>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+            {isEditing ? "Chomp updated!" : "Chomp logged!"}
+          </h2>
+          <p className="text-gray-500">
+            {compositeScore !== null && (
+              <span className="text-orange-600 font-semibold">
+                {compositeScore.toFixed(1)} / 5.0
+              </span>
+            )}
+            {" "}at {restaurantName}
+          </p>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {isEditing ? "Chomp updated!" : "Chomp logged!"}
-        </h2>
-        <p className="text-gray-500">
-          {compositeScore !== null && (
-            <span className="text-orange-600 font-semibold">
-              {compositeScore.toFixed(1)} / 5.0
-            </span>
-          )}
-          {" "}at {restaurantName}
-        </p>
+
+        <div className="flex flex-col gap-3 max-w-xs mx-auto pt-2">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center justify-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium py-3 px-5 rounded-xl transition-colors"
+          >
+            {copied ? (
+              <>
+                <Check size={18} />
+                Link Copied!
+              </>
+            ) : (
+              <>
+                <Share2 size={18} />
+                Share This Chomp
+              </>
+            )}
+          </button>
+          <button
+            onClick={handleGoToDashboard}
+            className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-5 rounded-xl transition-colors"
+          >
+            Go to Dashboard
+            <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
     );
   }
@@ -312,7 +362,7 @@ export function EntryForm({
       {/* Location section */}
       <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-          Location
+          Where
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -321,7 +371,7 @@ export function EntryForm({
               htmlFor="restaurant"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Restaurant Name *
+              Restaurant *
             </label>
             <input
               id="restaurant"
@@ -367,7 +417,7 @@ export function EntryForm({
 
         <details className="group" open={hasLocationDetails || undefined}>
           <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 select-none">
-            + Add address, phone, or notes about location
+            + Address, phone, or location notes
           </summary>
           <div className="mt-3 space-y-3">
             <input
@@ -375,164 +425,34 @@ export function EntryForm({
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-              placeholder="Address (optional)"
+              placeholder="Address"
             />
             <input
               type="text"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-              placeholder="Phone number (optional)"
+              placeholder="Phone number"
             />
             <input
               type="text"
               value={locationNotes}
               onChange={(e) => setLocationNotes(e.target.value)}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
-              placeholder="Hours, tips, reservations... (optional)"
+              placeholder="Hours, tips, reservations..."
             />
           </div>
         </details>
       </div>
 
-      {/* Details section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-          Details
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label
-              htmlFor="subtype"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Order
-            </label>
-            {!showAddSubtype ? (
-              <div className="flex gap-2">
-                <select
-                  id="subtype"
-                  value={subtypeId}
-                  onChange={(e) => setSubtypeId(e.target.value)}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 bg-white"
-                >
-                  <option value="">None</option>
-                  {subtypes.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {st.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => setShowAddSubtype(true)}
-                  className="px-3 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-500 hover:bg-orange-50 transition-colors"
-                  title="Add new order"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newSubtypeName}
-                  onChange={(e) => setNewSubtypeName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddSubtype();
-                    }
-                  }}
-                  className="flex-1 px-4 py-2.5 rounded-xl border border-orange-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
-                  placeholder="e.g., Carne Asada"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  onClick={handleAddSubtype}
-                  className="px-3 py-2.5 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors"
-                >
-                  <Plus size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddSubtype(false);
-                    setNewSubtypeName("");
-                  }}
-                  className="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label
-              htmlFor="quantity"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Quantity
-            </label>
-            <input
-              id="quantity"
-              type="number"
-              min="1"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
-              placeholder="How many?"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="cost"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Cost ($)
-            </label>
-            <input
-              id="cost"
-              type="number"
-              min="0"
-              step="0.01"
-              value={cost}
-              onChange={(e) => setCost(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label
-            htmlFor="eatenAt"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            When
-          </label>
-          <input
-            id="eatenAt"
-            type="datetime-local"
-            value={eatenAt}
-            onChange={(e) => setEatenAt(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
-          />
-        </div>
-      </div>
-
-      {/* Rating section */}
+      {/* Rating section -- moved above details for prominence */}
       <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
             Rating
           </h3>
           {compositeScore !== null && (
-            <div className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full">
+            <div className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full animate-scale-pop">
               {compositeScore.toFixed(1)} / 5.0
             </div>
           )}
@@ -554,24 +474,163 @@ export function EntryForm({
 
         {!allRated && ratedCategories.length > 0 && (
           <p className="text-xs text-gray-400">
-            Rate all categories to see your composite score
+            {ratingCategories.length - ratedCategories.length} more to go
           </p>
         )}
       </div>
 
-      {/* Notes */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-2">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-          Notes
-        </h3>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
-          placeholder="How was the experience? Anything notable?"
-        />
-      </div>
+      {/* Details section -- collapsed by default */}
+      <details className="group" open={hasEntryDetails || undefined}>
+        <summary className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4 cursor-pointer hover:bg-orange-50/30 transition-colors select-none flex items-center justify-between">
+          <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            Details
+          </span>
+          <span className="text-xs text-gray-400 group-open:hidden">
+            Order, cost, quantity, when...
+          </span>
+        </summary>
+        <div className="bg-white rounded-b-2xl shadow-sm border border-t-0 border-orange-100 p-5 -mt-3 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="subtype"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Order
+              </label>
+              {!showAddSubtype ? (
+                <div className="flex gap-2">
+                  <select
+                    id="subtype"
+                    value={subtypeId}
+                    onChange={(e) => setSubtypeId(e.target.value)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 bg-white"
+                  >
+                    <option value="">None</option>
+                    {subtypes.map((st) => (
+                      <option key={st.id} value={st.id}>
+                        {st.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddSubtype(true)}
+                    className="px-3 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-500 hover:bg-orange-50 transition-colors"
+                    title="Add new order"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubtypeName}
+                    onChange={(e) => setNewSubtypeName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSubtype();
+                      }
+                    }}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-orange-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                    placeholder="e.g., Carne Asada"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSubtype}
+                    className="px-3 py-2.5 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                  >
+                    <Plus size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddSubtype(false);
+                      setNewSubtypeName("");
+                    }}
+                    className="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="quantity"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Quantity
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                min="1"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                placeholder="How many?"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="cost"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Cost ($)
+              </label>
+              <input
+                id="cost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={cost}
+                onChange={(e) => setCost(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="eatenAt"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              When
+            </label>
+            <input
+              id="eatenAt"
+              type="datetime-local"
+              value={eatenAt}
+              onChange={(e) => setEatenAt(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="notes"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
+              placeholder="How was the experience?"
+            />
+          </div>
+        </div>
+      </details>
 
       {error && (
         <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3">
@@ -584,7 +643,7 @@ export function EntryForm({
         disabled={loading}
         className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-lg"
       >
-        {loading ? "Saving..." : isEditing ? "Update Entry" : "Log Entry"}
+        {loading ? "Saving..." : isEditing ? "Update Chomp" : "Log Chomp"}
       </button>
     </form>
   );

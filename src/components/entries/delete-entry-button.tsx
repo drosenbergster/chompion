@@ -13,17 +13,21 @@ export function DeleteEntryButton({ entryId }: DeleteEntryButtonProps) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
     setDeleting(true);
+    setError(null);
     const supabase = createClient();
 
-    // Delete entry_ratings first (FK constraint), then the entry
     await supabase.from("entry_ratings").delete().eq("entry_id", entryId);
-    const { error } = await supabase.from("entries").delete().eq("id", entryId);
+    const { error: deleteError } = await supabase
+      .from("entries")
+      .delete()
+      .eq("id", entryId);
 
-    if (error) {
-      alert("Failed to delete entry: " + error.message);
+    if (deleteError) {
+      setError("Failed to delete: " + deleteError.message);
       setDeleting(false);
       setConfirming(false);
       return;
@@ -55,11 +59,18 @@ export function DeleteEntryButton({ entryId }: DeleteEntryButtonProps) {
   }
 
   return (
-    <button
-      onClick={() => setConfirming(true)}
-      className="inline-flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 font-medium py-3 px-4 rounded-xl transition-colors"
-    >
-      <Trash2 size={16} />
-    </button>
+    <>
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-2.5 mb-2">
+          {error}
+        </div>
+      )}
+      <button
+        onClick={() => setConfirming(true)}
+        className="inline-flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300 font-medium py-3 px-4 rounded-xl transition-colors"
+      >
+        <Trash2 size={16} />
+      </button>
+    </>
   );
 }

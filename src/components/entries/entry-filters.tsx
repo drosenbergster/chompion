@@ -1,0 +1,96 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowUpDown } from "lucide-react";
+
+interface EntryFiltersProps {
+  cities: string[];
+  orders: string[];
+}
+
+export function EntryFilters({ cities, orders }: EntryFiltersProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const currentSort = searchParams.get("sort") ?? "date";
+  const currentCity = searchParams.get("city") ?? "";
+  const currentOrder = searchParams.get("order") ?? "";
+
+  function updateParams(key: string, value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+    params.delete("success");
+    router.push(`/entries?${params.toString()}`);
+  }
+
+  const sortOptions = [
+    { value: "date", label: "Newest" },
+    { value: "date-asc", label: "Oldest" },
+    { value: "rating", label: "Top Rated" },
+    { value: "cost", label: "Most Expensive" },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1 bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <ArrowUpDown size={14} className="text-gray-400 ml-3" />
+        {sortOptions.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => updateParams("sort", opt.value)}
+            className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+              currentSort === opt.value
+                ? "bg-orange-500 text-white"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {cities.length > 1 && (
+        <select
+          value={currentCity}
+          onChange={(e) => updateParams("city", e.target.value)}
+          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 outline-none"
+        >
+          <option value="">All cities</option>
+          {cities.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {orders.length > 1 && (
+        <select
+          value={currentOrder}
+          onChange={(e) => updateParams("order", e.target.value)}
+          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 outline-none"
+        >
+          <option value="">All orders</option>
+          {orders.map((o) => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      )}
+
+      {(currentCity || currentOrder || currentSort !== "date") && (
+        <button
+          onClick={() => router.push("/entries")}
+          className="px-3 py-1.5 text-xs text-orange-500 hover:text-orange-600 font-medium"
+        >
+          Reset
+        </button>
+      )}
+    </div>
+  );
+}

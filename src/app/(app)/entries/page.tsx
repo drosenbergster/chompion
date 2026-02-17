@@ -3,11 +3,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { MapPin, Star, Plus, ChevronRight } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
+import { EntryFilters } from "@/components/entries/entry-filters";
 
 export default async function EntriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string }>;
+  searchParams: Promise<{
+    success?: string;
+    sort?: string;
+    city?: string;
+    order?: string;
+  }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -17,7 +23,6 @@ export default async function EntriesPage({
 
   if (!user) redirect("/login");
 
-  // Get user's default passion food
   const { data: passionFood } = await supabase
     .from("passion_foods")
     .select("*")
@@ -27,8 +32,7 @@ export default async function EntriesPage({
 
   if (!passionFood) redirect("/onboarding");
 
-  // Get entries with subtypes
-  const { data: entries } = await supabase
+  const { data: allEntries } = await supabase
     .from("entries")
     .select(
       `
@@ -39,11 +43,75 @@ export default async function EntriesPage({
     .eq("passion_food_id", passionFood.id)
     .order("eaten_at", { ascending: false });
 
+  const allCities = [
+    ...new Set((allEntries ?? []).map((e) => e.city).filter(Boolean)),
+  ].sort();
+
+  const allOrders = [
+    ...new Set(
+      (allEntries ?? [])
+        .map((e) => {
+          if (
+            e.subtypes &&
+            typeof e.subtypes === "object" &&
+            "name" in e.subtypes
+          ) {
+            return (e.subtypes as { name: string }).name;
+          }
+          return null;
+        })
+        .filter(Boolean) as string[]
+    ),
+  ].sort();
+
+  let entries = [...(allEntries ?? [])];
+
+  if (params.city) {
+    entries = entries.filter((e) => e.city === params.city);
+  }
+
+  if (params.order) {
+    entries = entries.filter((e) => {
+      if (
+        e.subtypes &&
+        typeof e.subtypes === "object" &&
+        "name" in e.subtypes
+      ) {
+        return (e.subtypes as { name: string }).name === params.order;
+      }
+      return false;
+    });
+  }
+
+  switch (params.sort) {
+    case "rating":
+      entries.sort(
+        (a, b) =>
+          Number(b.composite_score ?? 0) - Number(a.composite_score ?? 0)
+      );
+      break;
+    case "cost":
+      entries.sort((a, b) => Number(b.cost ?? 0) - Number(a.cost ?? 0));
+      break;
+    case "date-asc":
+      entries.sort(
+        (a, b) =>
+          new Date(a.eaten_at).getTime() - new Date(b.eaten_at).getTime()
+      );
+      break;
+    default:
+      break;
+  }
+
+  const totalCount = allEntries?.length ?? 0;
+  const filteredCount = entries.length;
+  const isFiltered = totalCount !== filteredCount;
+
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
       : params.success === "deleted"
-        ? "Chomp deleted."
+        ? "Chomp deleted!"
         : params.success === "updated"
           ? "Chomp updated!"
           : null;
@@ -52,12 +120,13 @@ export default async function EntriesPage({
     <div className="pb-20 md:pb-8">
       {successMessage && <SuccessToast message={successMessage} />}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Chomps</h1>
           <p className="text-sm text-gray-500">
-            {entries?.length ?? 0} {passionFood.name.toLowerCase()}{" "}
-            {(entries?.length ?? 0) === 1 ? "chomp" : "chomps"}
+            {isFiltered ? `${filteredCount} of ` : ""}
+            {totalCount} {passionFood.name.toLowerCase()}{" "}
+            {totalCount === 1 ? "chomp" : "chomps"}
           </p>
         </div>
         <Link
@@ -65,11 +134,17 @@ export default async function EntriesPage({
           className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
         >
           <Plus size={16} />
-          New Entry
+          Log Chomp
         </Link>
       </div>
 
-      {!entries || entries.length === 0 ? (
+      {totalCount > 0 && (
+        <div className="mb-4">
+          <EntryFilters cities={allCities} orders={allOrders} />
+        </div>
+      )}
+
+      {entries.length === 0 && !isFiltered ? (
         <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
           <div className="text-6xl mb-4">🍽️</div>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -85,6 +160,10 @@ export default async function EntriesPage({
             <Plus size={18} />
             Log Your First Chomp
           </Link>
+        </div>
+      ) : entries.length === 0 && isFiltered ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-8 text-center">
+          <p className="text-gray-500">No chomps match your filters.</p>
         </div>
       ) : (
         <div className="space-y-3">

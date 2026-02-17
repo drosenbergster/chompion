@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Plus, Star, MapPin, TrendingUp, Flame } from "lucide-react";
+import { Plus, Star, MapPin, TrendingUp, Flame, BarChart3 } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
+import { RatingTrendChart } from "@/components/dashboard/rating-trend-chart";
 
 const FOOD_EMOJIS: Record<string, string> = {
   burritos: "🌯",
@@ -49,7 +50,7 @@ function calculateStreak(dates: Date[]): number {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string }>;
+  searchParams: Promise<{ success?: string; food?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -69,8 +70,11 @@ export default async function DashboardPage({
     redirect("/onboarding");
   }
 
+  const selectedFood = params.food
+    ? passionFoods.find((f) => f.id === params.food)
+    : undefined;
   const defaultFood =
-    passionFoods.find((f) => f.is_default) ?? passionFoods[0];
+    selectedFood ?? passionFoods.find((f) => f.is_default) ?? passionFoods[0];
 
   const foodEmoji = FOOD_EMOJIS[defaultFood.theme_key] ?? FOOD_EMOJIS.generic;
 
@@ -123,6 +127,22 @@ export default async function DashboardPage({
 
   const recentEntries = (entries ?? []).slice(0, 5);
 
+  const ratingTrendData = [...(entries ?? [])]
+    .filter((e) => e.composite_score)
+    .sort(
+      (a, b) =>
+        new Date(a.eaten_at).getTime() - new Date(b.eaten_at).getTime()
+    )
+    .slice(-20)
+    .map((e) => ({
+      date: e.eaten_at,
+      label: new Date(e.eaten_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      score: Number(e.composite_score),
+    }));
+
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
@@ -137,16 +157,17 @@ export default async function DashboardPage({
       {/* Food tabs */}
       <div className="flex items-center gap-3 overflow-x-auto pb-1">
         {passionFoods.map((food) => (
-          <div
+          <Link
             key={food.id}
+            href={`/dashboard?food=${food.id}`}
             className={`flex-shrink-0 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
               food.id === defaultFood.id
                 ? "bg-orange-500 text-white shadow-md"
                 : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             }`}
           >
-            {food.name}
-          </div>
+            {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
+          </Link>
         ))}
         <Link
           href="/passion-foods"
@@ -217,6 +238,26 @@ export default async function DashboardPage({
             <Plus size={20} />
             Log Your First Chomp
           </Link>
+        </div>
+      )}
+
+      {/* Rating Trend mini-chart */}
+      {ratingTrendData.length >= 2 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={18} className="text-orange-500" />
+              <h3 className="font-semibold text-gray-900">Rating Trend</h3>
+            </div>
+            <Link
+              href="/insights"
+              className="text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1"
+            >
+              <BarChart3 size={14} />
+              All Insights
+            </Link>
+          </div>
+          <RatingTrendChart data={ratingTrendData} />
         </div>
       )}
 

@@ -14,7 +14,7 @@ interface AppNavProps {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/entries", label: "Entries", icon: UtensilsCrossed },
+  { href: "/entries", label: "Chomps", icon: UtensilsCrossed },
   { href: "/insights", label: "Insights", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -59,7 +59,7 @@ export function AppNav({ profile }: AppNavProps) {
             <Link
               href="/entries/new"
               className="bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors"
-              title="New Entry"
+              title="Log a Chomp"
             >
               <Plus size={20} />
             </Link>
