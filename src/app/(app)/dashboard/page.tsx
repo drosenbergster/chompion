@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plus, Star, MapPin, TrendingUp, Flame, BarChart3 } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { RatingTrendChart } from "@/components/dashboard/rating-trend-chart";
+import { WelcomeTutorial } from "@/components/tutorial/welcome-tutorial";
 
 const FOOD_EMOJIS: Record<string, string> = {
   burritos: "🌯",
@@ -59,6 +60,14 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("has_seen_tutorial")
+    .eq("id", user.id)
+    .single();
+
+  const showTutorial = profile?.has_seen_tutorial === false;
 
   const { data: passionFoods } = await supabase
     .from("passion_foods")
@@ -152,6 +161,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6 pb-20 md:pb-8">
+      {showTutorial && <WelcomeTutorial />}
       {successMessage && <SuccessToast message={successMessage} />}
 
       {/* Food tabs */}
