@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Chompion",
-  description: "Track, rate, and own your food obsession",
+  description: "Who's your Chompion? The easy way to track, rate, and rank your favorite eats.",
 };
 
 export default function RootLayout({

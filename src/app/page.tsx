@@ -19,8 +19,7 @@ export default async function Home() {
           Chompion
         </h1>
         <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-          Track, rate, and own your food obsession.
-          Burritos? Pizza? Ramen? Become the chompion.
+          Who&apos;s your Chompion? The easy way to track, rate, and rank your favorite eats.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
