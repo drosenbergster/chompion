@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Star, Plus, Trash2, Check, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -35,6 +35,12 @@ export function RatingCategoriesEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track which IDs exist in the database so we know what to delete on save.
+  // Updated after every successful save.
+  const knownDbIds = useRef<Set<string>>(
+    new Set(initialCategories.map((c) => c.id))
+  );
 
   const totalWeight = categories.reduce(
     (sum, c) => sum + (parseInt(c.weight) || 0),
@@ -105,54 +111,94 @@ export function RatingCategoriesEditor({
     setError(null);
     const supabase = createClient();
 
-    // Delete categories that were removed
-    const currentIds = initialCategories.map((c) => c.id);
-    const keepIds = categories.filter((c) => !c.isNew).map((c) => c.id);
-    const deleteIds = currentIds.filter((id) => !keepIds.includes(id));
+    try {
+      // 1. Delete categories that existed in DB but were removed by the user
+      const keepIds = new Set(
+        categories.filter((c) => !c.isNew).map((c) => c.id)
+      );
+      const idsToDelete = [...knownDbIds.current].filter(
+        (id) => !keepIds.has(id)
+      );
 
-    for (const id of deleteIds) {
-      await supabase.from("rating_categories").delete().eq("id", id);
-    }
+      if (idsToDelete.length > 0) {
+        const { error: delErr } = await supabase
+          .from("rating_categories")
+          .delete()
+          .in("id", idsToDelete);
+        if (delErr) {
+          setError("Failed to delete categories: " + delErr.message);
+          setSaving(false);
+          return;
+        }
+      }
 
-    // Update existing categories
-    for (const cat of categories.filter((c) => !c.isNew)) {
-      await supabase
-        .from("rating_categories")
-        .update({
-          name: cat.name.trim(),
-          weight: parseInt(cat.weight) / 100,
-          sort_order: categories.indexOf(cat),
-        })
-        .eq("id", cat.id);
-    }
+      // 2. Update existing categories (non-new)
+      for (const cat of categories.filter((c) => !c.isNew)) {
+        const { error: updErr } = await supabase
+          .from("rating_categories")
+          .update({
+            name: cat.name.trim(),
+            weight: (parseInt(cat.weight) || 0) / 100,
+            sort_order: categories.indexOf(cat),
+          })
+          .eq("id", cat.id);
+        if (updErr) {
+          setError("Failed to update " + cat.name + ": " + updErr.message);
+          setSaving(false);
+          return;
+        }
+      }
 
-    // Insert new categories
-    for (const cat of categories.filter((c) => c.isNew)) {
-      const { data } = await supabase
-        .from("rating_categories")
-        .insert({
+      // 3. Insert new categories in a single batch
+      const newCats = categories.filter((c) => c.isNew);
+      if (newCats.length > 0) {
+        const rows = newCats.map((cat) => ({
           passion_food_id: passionFoodId,
           name: cat.name.trim(),
-          weight: parseInt(cat.weight) / 100,
+          weight: (parseInt(cat.weight) || 0) / 100,
           sort_order: categories.indexOf(cat),
-        })
-        .select()
-        .single();
-
-      if (data) {
-        cat.id = data.id;
-        cat.isNew = false;
+        }));
+        const { error: insErr } = await supabase
+          .from("rating_categories")
+          .insert(rows);
+        if (insErr) {
+          setError("Failed to add new categories: " + insErr.message);
+          setSaving(false);
+          return;
+        }
       }
-    }
 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    router.refresh();
+      // 4. Re-fetch from DB to get authoritative state (real IDs, etc.)
+      const { data: freshCats } = await supabase
+        .from("rating_categories")
+        .select("*")
+        .eq("passion_food_id", passionFoodId)
+        .order("sort_order");
+
+      if (freshCats) {
+        setCategories(
+          freshCats.map((c) => ({
+            id: c.id,
+            name: c.name,
+            weight: String(Math.round(Number(c.weight) * 100)),
+            isNew: false,
+          }))
+        );
+        knownDbIds.current = new Set(freshCats.map((c) => c.id));
+      }
+
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      router.refresh();
+    } catch {
+      setError("An unexpected error occurred");
+      setSaving(false);
+    }
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+    <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Star size={18} className="text-orange-500" />

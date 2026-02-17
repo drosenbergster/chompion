@@ -21,6 +21,7 @@ const navItems = [
 
 export function AppNav({ profile }: AppNavProps) {
   const pathname = usePathname();
+  const isOnNewEntry = pathname === "/entries/new";
 
   return (
     <>
@@ -56,9 +57,24 @@ export function AppNav({ profile }: AppNavProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Desktop: prominent labeled button */}
             <Link
               href="/entries/new"
-              className="bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors"
+              className={cn(
+                "hidden md:inline-flex items-center gap-2 font-semibold px-5 py-2.5 rounded-xl transition-colors",
+                isOnNewEntry
+                  ? "bg-orange-600 text-white"
+                  : "bg-orange-500 hover:bg-orange-600 text-white"
+              )}
+            >
+              <Plus size={18} strokeWidth={2.5} />
+              Log Chomp
+            </Link>
+
+            {/* Mobile: compact icon button (secondary — FAB is primary) */}
+            <Link
+              href="/entries/new"
+              className="md:hidden bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors"
               title="Log a Chomp"
             >
               <Plus size={20} />
@@ -82,10 +98,45 @@ export function AppNav({ profile }: AppNavProps) {
         </div>
       </nav>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav with center FAB */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-orange-100 z-50 safe-area-pb">
-        <div className="flex items-center justify-around h-16">
-          {navItems.map((item) => {
+        <div className="flex items-center justify-around h-16 relative">
+          {/* Left nav items */}
+          {navItems.slice(0, 2).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors",
+                  isActive
+                    ? "text-orange-600"
+                    : "text-gray-400 hover:text-gray-600"
+                )}
+              >
+                <Icon size={22} />
+                {item.label}
+              </Link>
+            );
+          })}
+
+          {/* Center FAB — the primary action */}
+          <Link
+            href="/entries/new"
+            className={cn(
+              "flex flex-col items-center justify-center -mt-7 w-16 h-16 rounded-full shadow-lg transition-all active:scale-95",
+              isOnNewEntry
+                ? "bg-orange-600 shadow-orange-300"
+                : "bg-orange-500 hover:bg-orange-600 shadow-orange-200"
+            )}
+          >
+            <Plus size={28} className="text-white" strokeWidth={2.5} />
+          </Link>
+
+          {/* Right nav items */}
+          {navItems.slice(2).map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (

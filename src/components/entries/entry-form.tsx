@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Plus, X, Share2, ArrowRight, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -27,6 +27,7 @@ interface EntryFormProps {
   ratingCategories: RatingCategory[];
   existingEntry?: Entry;
   existingRatings?: ExistingRating[];
+  prefillEntry?: Entry;
 }
 
 export function EntryForm({
@@ -38,6 +39,7 @@ export function EntryForm({
   ratingCategories,
   existingEntry,
   existingRatings,
+  prefillEntry,
 }: EntryFormProps) {
   const router = useRouter();
   const isEditing = !!existingEntry;
@@ -45,36 +47,44 @@ export function EntryForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Form state -- pre-populate from existing entry if editing
+  // Source for pre-filling: editing takes precedence, then prefill (log again)
+  const source = existingEntry ?? prefillEntry;
+
+  // Form state -- pre-populate from existing/prefill entry
   const [selectedFoodId, setSelectedFoodId] = useState(
-    existingEntry?.passion_food_id ?? initialPassionFood.id
+    source?.passion_food_id ?? initialPassionFood.id
   );
   const [restaurantName, setRestaurantName] = useState(
-    existingEntry?.restaurant_name ?? ""
+    source?.restaurant_name ?? ""
   );
-  const [city, setCity] = useState(existingEntry?.city ?? "");
-  const [address, setAddress] = useState(existingEntry?.address ?? "");
+  const [city, setCity] = useState(source?.city ?? "");
+  const [address, setAddress] = useState(source?.address ?? "");
   const [phoneNumber, setPhoneNumber] = useState(
-    existingEntry?.phone_number ?? ""
+    source?.phone_number ?? ""
   );
   const [locationNotes, setLocationNotes] = useState(
-    existingEntry?.location_notes ?? ""
+    source?.location_notes ?? ""
   );
   const [subtypeId, setSubtypeId] = useState<string>(
-    existingEntry?.subtype_id ?? ""
+    source?.subtype_id ?? ""
   );
   const [quantity, setQuantity] = useState(
-    existingEntry?.quantity ? String(existingEntry.quantity) : ""
+    source?.quantity ? String(source.quantity) : ""
   );
   const [cost, setCost] = useState(
-    existingEntry?.cost ? String(existingEntry.cost) : ""
+    source?.cost ? String(source.cost) : ""
   );
-  const [notes, setNotes] = useState(existingEntry?.notes ?? "");
+  const [notes, setNotes] = useState("");
   const [eatenAt, setEatenAt] = useState(
     existingEntry
       ? new Date(existingEntry.eaten_at).toISOString().slice(0, 16)
       : new Date().toISOString().slice(0, 16)
   );
+
+  // Dynamic rating categories and subtypes (per food)
+  const [activeFoodCategories, setActiveFoodCategories] =
+    useState<RatingCategory[]>(ratingCategories);
+  const [loadingFood, setLoadingFood] = useState(false);
 
   // Rating state
   const [ratings, setRatings] = useState<Record<string, number>>(() => {
@@ -93,8 +103,63 @@ export function EntryForm({
   const [showAddSubtype, setShowAddSubtype] = useState(false);
   const [newSubtypeName, setNewSubtypeName] = useState("");
 
+  // Fetch categories and subtypes when selected food changes
+  const fetchFoodData = useCallback(
+    async (foodId: string) => {
+      if (foodId === initialPassionFood.id) {
+        setActiveFoodCategories(ratingCategories);
+        setSubtypes(initialSubtypes);
+        const initial: Record<string, number> = {};
+        ratingCategories.forEach((cat) => {
+          const existing = existingRatings?.find(
+            (r) => r.rating_category_id === cat.id
+          );
+          initial[cat.id] = existing?.score ?? 0;
+        });
+        setRatings(initial);
+        return;
+      }
+
+      setLoadingFood(true);
+      const supabase = createClient();
+
+      const [{ data: cats }, { data: subs }] = await Promise.all([
+        supabase
+          .from("rating_categories")
+          .select("*")
+          .eq("passion_food_id", foodId)
+          .order("sort_order"),
+        supabase
+          .from("subtypes")
+          .select("*")
+          .eq("passion_food_id", foodId)
+          .order("sort_order"),
+      ]);
+
+      const newCats = (cats ?? []) as RatingCategory[];
+      setActiveFoodCategories(newCats);
+      setSubtypes((subs ?? []) as Subtype[]);
+      setSubtypeId("");
+
+      const freshRatings: Record<string, number> = {};
+      newCats.forEach((cat) => {
+        freshRatings[cat.id] = 0;
+      });
+      setRatings(freshRatings);
+      setLoadingFood(false);
+    },
+    [initialPassionFood.id, ratingCategories, initialSubtypes, existingRatings]
+  );
+
+  useEffect(() => {
+    if (selectedFoodId !== initialPassionFood.id) {
+      fetchFoodData(selectedFoodId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFoodId]);
+
   // Composite score
-  const ratedCategories = ratingCategories
+  const ratedCategories = activeFoodCategories
     .filter((cat) => ratings[cat.id] > 0)
     .map((cat) => ({ score: ratings[cat.id], weight: Number(cat.weight) }));
 
@@ -103,7 +168,7 @@ export function EntryForm({
       ? calculateCompositeScore(ratedCategories)
       : null;
 
-  const allRated = ratingCategories.every((cat) => ratings[cat.id] > 0);
+  const allRated = activeFoodCategories.every((cat) => ratings[cat.id] > 0);
 
   const hasLocationDetails = !!(address || phoneNumber || locationNotes);
   const hasEntryDetails = !!(subtypeId || quantity || cost || notes);
@@ -144,8 +209,8 @@ export function EntryForm({
       return;
     }
 
-    if (!allRated) {
-      setError("Please rate all categories");
+    if (ratedCategories.length === 0) {
+      setError("Please rate at least one category");
       setLoading(false);
       return;
     }
@@ -186,20 +251,24 @@ export function EntryForm({
         .delete()
         .eq("entry_id", existingEntry.id);
 
-      const ratingsToInsert = ratingCategories.map((cat) => ({
-        entry_id: existingEntry.id,
-        rating_category_id: cat.id,
-        score: ratings[cat.id],
-      }));
+      const ratingsToInsert = activeFoodCategories
+        .filter((cat) => ratings[cat.id] > 0)
+        .map((cat) => ({
+          entry_id: existingEntry.id,
+          rating_category_id: cat.id,
+          score: ratings[cat.id],
+        }));
 
-      const { error: ratingsError } = await supabase
-        .from("entry_ratings")
-        .insert(ratingsToInsert);
+      if (ratingsToInsert.length > 0) {
+        const { error: ratingsError } = await supabase
+          .from("entry_ratings")
+          .insert(ratingsToInsert);
 
-      if (ratingsError) {
-        setError(ratingsError.message);
-        setLoading(false);
-        return;
+        if (ratingsError) {
+          setError(ratingsError.message);
+          setLoading(false);
+          return;
+        }
       }
 
       setSuccess(true);
@@ -218,20 +287,24 @@ export function EntryForm({
         return;
       }
 
-      const ratingsToInsert = ratingCategories.map((cat) => ({
-        entry_id: entry.id,
-        rating_category_id: cat.id,
-        score: ratings[cat.id],
-      }));
+      const ratingsToInsert = activeFoodCategories
+        .filter((cat) => ratings[cat.id] > 0)
+        .map((cat) => ({
+          entry_id: entry.id,
+          rating_category_id: cat.id,
+          score: ratings[cat.id],
+        }));
 
-      const { error: ratingsError } = await supabase
-        .from("entry_ratings")
-        .insert(ratingsToInsert);
+      if (ratingsToInsert.length > 0) {
+        const { error: ratingsError } = await supabase
+          .from("entry_ratings")
+          .insert(ratingsToInsert);
 
-      if (ratingsError) {
-        setError(ratingsError.message);
-        setLoading(false);
-        return;
+        if (ratingsError) {
+          setError(ratingsError.message);
+          setLoading(false);
+          return;
+        }
       }
 
       setSuccess(true);
@@ -346,11 +419,15 @@ export function EntryForm({
             <button
               key={food.id}
               type="button"
-              onClick={() => setSelectedFoodId(food.id)}
+              disabled={loadingFood}
+              onClick={() => {
+                setSelectedFoodId(food.id);
+                fetchFoodData(food.id);
+              }}
               className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 food.id === selectedFoodId
                   ? "bg-orange-500 text-white"
-                  : "bg-white text-gray-600 border border-gray-200"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
               }`}
             >
               {food.name}
@@ -458,23 +535,29 @@ export function EntryForm({
           )}
         </div>
 
-        <div className="space-y-3">
-          {ratingCategories.map((cat) => (
-            <StarRating
-              key={cat.id}
-              label={cat.name}
-              weight={Number(cat.weight)}
-              value={ratings[cat.id]}
-              onChange={(score) =>
-                setRatings((prev) => ({ ...prev, [cat.id]: score }))
-              }
-            />
-          ))}
-        </div>
+        {loadingFood ? (
+          <div className="py-4 text-center text-sm text-gray-400">
+            Loading categories...
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activeFoodCategories.map((cat) => (
+              <StarRating
+                key={cat.id}
+                label={cat.name}
+                weight={Number(cat.weight)}
+                value={ratings[cat.id] ?? 0}
+                onChange={(score) =>
+                  setRatings((prev) => ({ ...prev, [cat.id]: score }))
+                }
+              />
+            ))}
+          </div>
+        )}
 
         {!allRated && ratedCategories.length > 0 && (
           <p className="text-xs text-gray-400">
-            {ratingCategories.length - ratedCategories.length} more to go
+            {activeFoodCategories.length - ratedCategories.length} unrated (optional)
           </p>
         )}
       </div>

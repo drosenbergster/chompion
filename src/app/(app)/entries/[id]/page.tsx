@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { MapPin, Star, ArrowLeft, Pencil, Calendar, DollarSign, Hash } from "lucide-react";
+import { MapPin, Star, ArrowLeft, Pencil, Calendar, DollarSign, Hash, RotateCcw } from "lucide-react";
 import { generateMapsLink } from "@/lib/utils";
 import { DeleteEntryButton } from "@/components/entries/delete-entry-button";
 
@@ -235,6 +235,13 @@ export default async function EntryDetailPage({
 
       {/* Actions */}
       <div className="flex gap-3 mt-6">
+        <Link
+          href={`/entries/new?from=${entry.id}`}
+          className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold py-3 px-4 rounded-xl transition-colors"
+        >
+          <RotateCcw size={16} />
+          Log Again
+        </Link>
         <Link
           href={`/entries/${entry.id}/edit`}
           className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
