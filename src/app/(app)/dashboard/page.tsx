@@ -1,24 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Plus, Star, MapPin, TrendingUp, Flame, BarChart3 } from "lucide-react";
+import { Plus, Star, MapPin, TrendingUp, Flame, BarChart3, ChevronRight } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { RatingTrendChart } from "@/components/dashboard/rating-trend-chart";
 import { WelcomeTutorial } from "@/components/tutorial/welcome-tutorial";
-
-const FOOD_EMOJIS: Record<string, string> = {
-  burritos: "🌯",
-  pizza: "🍕",
-  tacos: "🌮",
-  ramen: "🍜",
-  sushi: "🍣",
-  burgers: "🍔",
-  hotdogs: "🌭",
-  wings: "🍗",
-  icecream: "🍦",
-  pho: "🍲",
-  generic: "🍽️",
-};
+import { FOOD_EMOJIS } from "@/lib/constants";
 
 function getWeekKey(date: Date): string {
   const d = new Date(date);
@@ -69,29 +56,10 @@ export default async function DashboardPage({
 
   const hasNoFoods = !passionFoods || passionFoods.length === 0;
 
-  // Show tutorial for brand-new users who haven't started a list yet
   if (hasNoFoods) {
     return (
-      <div className="space-y-6 pb-20 md:pb-8">
+      <div className="pb-20 md:pb-8">
         <WelcomeTutorial />
-
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-10 text-center animate-fade-in">
-          <div className="text-6xl mb-4">🍽️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Pick your food
-          </h2>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto leading-relaxed">
-            What do you love eating? Pick a food to start tracking your
-            favorite spots and ratings.
-          </p>
-          <Link
-            href="/passion-foods"
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-xl transition-colors text-lg"
-          >
-            <Plus size={20} />
-            Start Your First List
-          </Link>
-        </div>
       </div>
     );
   }
@@ -246,25 +214,24 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      {/* Empty state */}
       {entryCount === 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-slide-up">
-          <div className="text-6xl mb-4">{foodEmoji}</div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">
-            No chomps yet!
-          </h3>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-            Your first {defaultFood.name.toLowerCase()} awaits. Start logging
-            to see your stats come to life.
-          </p>
-          <Link
-            href="/entries/new"
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
-          >
-            <Plus size={20} />
-            Log Your First Chomp
-          </Link>
-        </div>
+        <Link
+          href="/entries/new"
+          className="flex items-center gap-4 bg-orange-50 hover:bg-orange-100 rounded-2xl p-4 transition-colors group animate-fade-in"
+        >
+          <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+            <Plus size={18} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900">
+              Ready to log your first {defaultFood.name.toLowerCase()}?
+            </p>
+            <p className="text-xs text-gray-500">
+              Tap here to get your stats rolling
+            </p>
+          </div>
+          <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+        </Link>
       )}
 
       {/* Rating Trend mini-chart */}

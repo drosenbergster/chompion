@@ -5,19 +5,7 @@ import { Star, MapPin, UtensilsCrossed } from "lucide-react";
 import { ProfileRadarChart } from "@/components/profile/profile-radar-chart";
 import { FollowButton } from "@/components/profile/follow-button";
 
-const FOOD_EMOJIS: Record<string, string> = {
-  burritos: "🌯",
-  pizza: "🍕",
-  tacos: "🌮",
-  ramen: "🍜",
-  sushi: "🍣",
-  burgers: "🍔",
-  hotdogs: "🌭",
-  wings: "🍗",
-  icecream: "🍦",
-  pho: "🍲",
-  generic: "🍽️",
-};
+import { FOOD_EMOJIS } from "@/lib/constants";
 
 export default async function PublicProfilePage({
   params,

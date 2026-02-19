@@ -6,6 +6,7 @@ import { MapPin, Plus, X, Share2, ArrowRight, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { calculateCompositeScore, generateMapsLink } from "@/lib/utils";
+import { FOOD_EMOJIS } from "@/lib/constants";
 import type {
   PassionFood,
   Subtype,
@@ -313,20 +314,6 @@ export function EntryForm({
   }
 
   const [copied, setCopied] = useState(false);
-
-  const FOOD_EMOJIS: Record<string, string> = {
-    burritos: "🌯",
-    pizza: "🍕",
-    tacos: "🌮",
-    ramen: "🍜",
-    sushi: "🍣",
-    burgers: "🍔",
-    hotdogs: "🌭",
-    wings: "🍗",
-    icecream: "🍦",
-    pho: "🍲",
-    generic: "🍽️",
-  };
 
   const foodEmoji =
     FOOD_EMOJIS[initialPassionFood.theme_key] ?? FOOD_EMOJIS.generic;

@@ -6,38 +6,11 @@ import { Star, Trash2, Plus, X, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PassionFood } from "@/lib/supabase/types";
 
-const FOOD_EMOJIS: Record<string, string> = {
-  burritos: "🌯",
-  pizza: "🍕",
-  tacos: "🌮",
-  ramen: "🍜",
-  sushi: "🍣",
-  burgers: "🍔",
-  hotdogs: "🌭",
-  wings: "🍗",
-  icecream: "🍦",
-  pho: "🍲",
-  generic: "🍽️",
-};
-
-const POPULAR_FOODS = [
-  { name: "Pizza", theme: "pizza", emoji: "🍕" },
-  { name: "Burritos", theme: "burritos", emoji: "🌯" },
-  { name: "Tacos", theme: "tacos", emoji: "🌮" },
-  { name: "Ramen", theme: "ramen", emoji: "🍜" },
-  { name: "Sushi", theme: "sushi", emoji: "🍣" },
-  { name: "Burgers", theme: "burgers", emoji: "🍔" },
-  { name: "Hot Dogs", theme: "hotdogs", emoji: "🌭" },
-  { name: "Wings", theme: "wings", emoji: "🍗" },
-  { name: "Ice Cream", theme: "icecream", emoji: "🍦" },
-  { name: "Pho", theme: "pho", emoji: "🍲" },
-];
-
-const DEFAULT_RATING_CATEGORIES = [
-  { name: "Taste", weight: 0.34 },
-  { name: "Value", weight: 0.33 },
-  { name: "Presentation", weight: 0.33 },
-];
+import {
+  FOOD_EMOJIS,
+  POPULAR_FOODS,
+  DEFAULT_RATING_CATEGORIES,
+} from "@/lib/constants";
 
 interface MyFoodsManagerProps {
   userId: string;
