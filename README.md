@@ -82,3 +82,12 @@ src/
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm test` | Run tests |
+
+## Backlog
+
+Items identified for future implementation:
+
+- **Loading states:** Add `loading.tsx` skeleton screens for dashboard, entries, insights, and friends routes
+- **Mobile nav:** Friends page is not accessible from the mobile bottom nav (desktop only via sidebar)
+- **Performance:** Pre-compute insights aggregations at scale (database-level materialized views or cached stats)
+- **Passion food switcher:** Dashboard and insights currently only show the default food; add a switcher for users with multiple lists

@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Plus, Trash2, Check, AlertCircle } from "lucide-react";
+import { Star, Plus, Trash2, Check, AlertCircle, Lightbulb, X } from "lucide-react";
+import { DEFAULT_RATING_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import type { RatingCategory } from "@/lib/supabase/types";
 
@@ -35,6 +36,7 @@ export function RatingCategoriesEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   // Track which IDs exist in the database so we know what to delete on save.
   // Updated after every successful save.
@@ -216,6 +218,31 @@ export function RatingCategoriesEditor({
         must add up to 100%.
       </p>
 
+      {!nudgeDismissed && categories.length < 5 && (() => {
+        const currentNames = new Set(categories.map((c) => c.name.toLowerCase()));
+        const missing = DEFAULT_RATING_CATEGORIES
+          .filter((d) => !currentNames.has(d.name.toLowerCase()))
+          .map((d) => d.name);
+        return missing.length > 0 ? (
+          <div className="mb-4 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 flex items-start gap-3">
+            <Lightbulb size={16} className="text-orange-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-orange-800">
+                For richer insights, consider adding{" "}
+                <span className="font-medium">{missing.join(" and ")}</span>{" "}
+                to your rating categories.
+              </p>
+            </div>
+            <button
+              onClick={() => setNudgeDismissed(true)}
+              className="text-orange-400 hover:text-orange-600 flex-shrink-0"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ) : null;
+      })()}
+
       <div className="space-y-3">
         {categories.map((cat) => (
           <div key={cat.id} className="flex items-center gap-2">
@@ -255,13 +282,20 @@ export function RatingCategoriesEditor({
         ))}
       </div>
 
-      <button
-        onClick={handleAddCategory}
-        className="mt-3 inline-flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600 font-medium"
-      >
-        <Plus size={15} />
-        Add Category
-      </button>
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          onClick={handleAddCategory}
+          className="inline-flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600 font-medium"
+        >
+          <Plus size={15} />
+          Add Category
+        </button>
+        {categories.length >= 5 && (
+          <span className="text-[11px] text-gray-400">
+            More categories = more to rate each time
+          </span>
+        )}
+      </div>
 
       {/* Weight indicator */}
       <div className="mt-4 flex items-center gap-2">

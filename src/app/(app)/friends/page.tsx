@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Star, MapPin, Users, UserPlus } from "lucide-react";
+import { Star, MapPin, Users, UserPlus, Search } from "lucide-react";
 import { FOOD_EMOJIS } from "@/lib/constants";
 
 export default async function FriendsPage() {
@@ -34,12 +34,15 @@ export default async function FriendsPage() {
             Follow other Chompion users to see their latest chomps here. Share
             your profile link so friends can find you!
           </p>
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
-          >
-            View Your Profile
-          </Link>
+          <div className="flex gap-3 justify-center">
+            <Link
+              href="/friends/search"
+              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            >
+              <Search size={16} />
+              Find Friends
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -93,6 +96,13 @@ export default async function FriendsPage() {
             {followingIds.length === 1 ? "person" : "people"} you follow
           </p>
         </div>
+        <Link
+          href="/friends/search"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors"
+        >
+          <Search size={15} />
+          Find
+        </Link>
       </div>
 
       {feedEntries.length === 0 ? (

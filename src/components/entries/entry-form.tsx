@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, X, Share2, ArrowRight, Check } from "lucide-react";
+import { MapPin, Plus, X, Share2, ArrowRight, Check, ArrowRightLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { calculateCompositeScore, generateMapsLink } from "@/lib/utils";
@@ -399,28 +399,40 @@ export function EntryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Passion food selector (if multiple and not editing) */}
-      {!isEditing && passionFoods.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {passionFoods.map((food) => (
-            <button
-              key={food.id}
-              type="button"
-              disabled={loadingFood}
-              onClick={() => {
-                setSelectedFoodId(food.id);
-                fetchFoodData(food.id);
-              }}
-              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                food.id === selectedFoodId
-                  ? "bg-orange-500 text-white"
-                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              {food.name}
-            </button>
-          ))}
-        </div>
+      {/* Passion food selector */}
+      {passionFoods.length > 1 && (
+        isEditing ? (
+          <MoveToListDisclosure
+            passionFoods={passionFoods}
+            selectedFoodId={selectedFoodId}
+            loadingFood={loadingFood}
+            onSelectFood={(foodId) => {
+              setSelectedFoodId(foodId);
+              fetchFoodData(foodId);
+            }}
+          />
+        ) : (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {passionFoods.map((food) => (
+              <button
+                key={food.id}
+                type="button"
+                disabled={loadingFood}
+                onClick={() => {
+                  setSelectedFoodId(food.id);
+                  fetchFoodData(food.id);
+                }}
+                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  food.id === selectedFoodId
+                    ? "bg-orange-500 text-white"
+                    : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                {food.name}
+              </button>
+            ))}
+          </div>
+        )
       )}
 
       {/* Location section */}
@@ -716,5 +728,60 @@ export function EntryForm({
         {loading ? "Saving..." : isEditing ? "Update Chomp" : "Log Chomp"}
       </button>
     </form>
+  );
+}
+
+function MoveToListDisclosure({
+  passionFoods,
+  selectedFoodId,
+  loadingFood,
+  onSelectFood,
+}: {
+  passionFoods: PassionFood[];
+  selectedFoodId: string;
+  loadingFood: boolean;
+  onSelectFood: (foodId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const currentFood = passionFoods.find((f) => f.id === selectedFoodId);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <ArrowRightLeft size={14} />
+        <span>
+          Move to different list
+          {currentFood && (
+            <span className="text-gray-400 ml-1">(currently {currentFood.name})</span>
+          )}
+        </span>
+      </button>
+      {open && (
+        <div className="px-4 pb-3 flex gap-2 flex-wrap">
+          {passionFoods.map((food) => (
+            <button
+              key={food.id}
+              type="button"
+              disabled={loadingFood}
+              onClick={() => onSelectFood(food.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                food.id === selectedFoodId
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
+            </button>
+          ))}
+          <p className="w-full text-[11px] text-amber-600 mt-1">
+            Moving will clear ratings — you&apos;ll re-rate with the new list&apos;s categories.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
