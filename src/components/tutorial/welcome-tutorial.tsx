@@ -258,9 +258,9 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
               key={i}
               className={`h-1.5 rounded-full transition-all ${
                 i === step
-                  ? "w-6 bg-orange-500"
+                  ? "w-6 bg-emerald-600"
                   : i < step
-                    ? "w-1.5 bg-orange-300"
+                    ? "w-1.5 bg-emerald-300"
                     : "w-1.5 bg-gray-200"
               }`}
             />
@@ -294,7 +294,7 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
           <button
             onClick={isLast ? handleFinish : handleNext}
             disabled={!canAdvance || loading}
-            className="flex-1 flex items-center justify-center gap-1 py-4 text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors disabled:text-orange-300"
+            className="flex-1 flex items-center justify-center gap-1 py-4 text-sm font-semibold text-emerald-600 hover:text-emerald-700 transition-colors disabled:text-emerald-300"
           >
             {loading ? (
               "Setting up..."
@@ -316,7 +316,7 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
 function StepWelcome() {
   return (
     <div className="px-8 pt-10 pb-6 text-center">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-orange-100 text-orange-600">
+      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-emerald-100 text-emerald-700">
         <span className="text-3xl">🎉</span>
       </div>
       <h2 className="text-xl font-bold text-gray-900 mb-2">
@@ -357,7 +357,7 @@ function StepPickFood({
         value={customFood}
         onChange={(e) => onCustomInput(e.target.value)}
         placeholder="Type your own — Donuts, Pho, anything..."
-        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-300 text-sm mb-3"
+        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-300 text-sm mb-3"
       />
 
       {error && (
@@ -382,14 +382,14 @@ function StepPickFood({
             onClick={() => onSelectFood(food.name)}
             className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl border-2 transition-all ${
               selectedFood === food.name
-                ? "border-orange-400 bg-orange-50 scale-[1.03] shadow-sm"
+                ? "border-emerald-400 bg-emerald-50 scale-[1.03] shadow-sm"
                 : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
             }`}
           >
             <span className="text-2xl">{food.emoji}</span>
             <span
               className={`text-[11px] font-medium leading-tight ${
-                selectedFood === food.name ? "text-orange-700" : "text-gray-600"
+                selectedFood === food.name ? "text-emerald-700" : "text-gray-600"
               }`}
             >
               {food.name}
@@ -449,7 +449,7 @@ function StepClaimProfile({
           onChange={(e) => onChangeUsername(e.target.value)}
           placeholder="your_username"
           maxLength={30}
-          className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-300 text-sm"
+          className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-300 text-sm"
         />
       </div>
 
@@ -491,7 +491,7 @@ function StepReady({ foodName }: { foodName: string }) {
         You&apos;re all set!
       </h2>
       <p className="text-gray-500 text-sm leading-relaxed">
-        Tap the <span className="text-orange-500 font-semibold">+</span> button
+        Tap the <span className="text-emerald-600 font-semibold">+</span> button
         anytime to log what you ate. Your{" "}
         <span className="font-semibold">{foodName}</span> dashboard is ready.
       </p>

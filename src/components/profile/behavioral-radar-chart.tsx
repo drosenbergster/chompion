@@ -22,7 +22,7 @@ interface BehavioralRadarProps {
 
 const TOOLTIP_STYLE = {
   borderRadius: 12,
-  border: "1px solid #fed7aa",
+  border: "1px solid #a7f3d0",
   boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
   fontSize: 13,
 };
@@ -63,7 +63,7 @@ function AxisTick({
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={12}
-        fill={hovered ? "#f97316" : "#6b7280"}
+        fill={hovered ? "#059669" : "#6b7280"}
         fontWeight={hovered ? 600 : 400}
         style={{ transition: "fill 0.15s, font-weight 0.15s" }}
         textDecoration={hovered ? "underline" : "none"}
@@ -81,7 +81,7 @@ function AxisTick({
           <div
             style={{
               background: "white",
-              border: "1px solid #fed7aa",
+              border: "1px solid #a7f3d0",
               borderRadius: 10,
               padding: "6px 10px",
               fontSize: 11,
@@ -127,8 +127,8 @@ export function BehavioralRadarChart({ radar }: BehavioralRadarProps) {
         <Radar
           name="You"
           dataKey="score"
-          stroke="#f97316"
-          fill="#f97316"
+          stroke="#059669"
+          fill="#059669"
           fillOpacity={0.2}
           strokeWidth={2}
         />

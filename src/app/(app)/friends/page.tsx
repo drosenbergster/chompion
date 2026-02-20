@@ -23,9 +23,9 @@ export default async function FriendsPage() {
     return (
       <div className="pb-20 md:pb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Friends</h1>
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <UserPlus className="text-orange-500" size={28} />
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UserPlus className="text-emerald-600" size={28} />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             No friends yet
@@ -37,7 +37,7 @@ export default async function FriendsPage() {
           <div className="flex gap-3 justify-center">
             <Link
               href="/friends/search"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
             >
               <Search size={16} />
               Find Friends
@@ -98,7 +98,7 @@ export default async function FriendsPage() {
         </div>
         <Link
           href="/friends/search"
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
         >
           <Search size={15} />
           Find
@@ -106,9 +106,9 @@ export default async function FriendsPage() {
       </div>
 
       {feedEntries.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="text-orange-500" size={28} />
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="text-emerald-600" size={28} />
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">
             No chomps yet
@@ -136,19 +136,19 @@ export default async function FriendsPage() {
             return (
               <div
                 key={entry.id}
-                className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4"
+                className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-4"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <Link
                     href={`/u/${profile?.username ?? ""}`}
-                    className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center text-lg flex-shrink-0 hover:ring-2 hover:ring-orange-300 transition-all"
+                    className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0 hover:ring-2 hover:ring-emerald-300 transition-all"
                   >
                     {emoji}
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/u/${profile?.username ?? ""}`}
-                      className="text-sm font-semibold text-gray-900 hover:text-orange-600 transition-colors"
+                      className="text-sm font-semibold text-gray-900 hover:text-emerald-700 transition-colors"
                     >
                       {profile?.display_name ?? "Unknown"}
                     </Link>
@@ -161,7 +161,7 @@ export default async function FriendsPage() {
                     </div>
                   </div>
                   {entry.composite_score && (
-                    <div className="flex items-center gap-0.5 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0">
+                    <div className="flex items-center gap-0.5 bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0">
                       <Star size={11} className="fill-white" />
                       {Number(entry.composite_score).toFixed(1)}
                     </div>
@@ -172,14 +172,14 @@ export default async function FriendsPage() {
                   href={`/u/${profile?.username ?? ""}/entry/${entry.id}`}
                   className="block group"
                 >
-                  <div className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">
+                  <div className="font-medium text-gray-900 group-hover:text-emerald-700 transition-colors">
                     {entry.restaurant_name}
                   </div>
                   <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
                     <MapPin size={10} />
                     {entry.city}
                     {subtypeName && (
-                      <span className="text-orange-400 ml-1">
+                      <span className="text-emerald-500 ml-1">
                         &middot; {subtypeName}
                       </span>
                     )}

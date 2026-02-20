@@ -58,7 +58,7 @@ export default async function EntryDetailPage({
       {/* Back button */}
       <Link
         href="/entries"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors mb-4"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600 transition-colors mb-4"
       >
         <ArrowLeft size={16} />
         Back to chomps
@@ -72,7 +72,7 @@ export default async function EntryDetailPage({
               {entry.restaurant_name}
             </h1>
             {subtypeName && (
-              <span className="flex-shrink-0 text-xs bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full font-medium">
+              <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
                 {subtypeName}
               </span>
             )}
@@ -83,7 +83,7 @@ export default async function EntryDetailPage({
               href={generateMapsLink(entry.restaurant_name, entry.city)}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-orange-500 transition-colors"
+              className="hover:text-emerald-600 transition-colors"
             >
               {entry.city}
             </a>
@@ -91,7 +91,7 @@ export default async function EntryDetailPage({
         </div>
 
         {entry.composite_score && (
-          <div className="flex items-center gap-1 bg-orange-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0">
+          <div className="flex items-center gap-1 bg-emerald-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0">
             <Star size={16} className="fill-white" />
             {Number(entry.composite_score).toFixed(1)}
           </div>
@@ -99,7 +99,7 @@ export default async function EntryDetailPage({
       </div>
 
       {/* Rating breakdown */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 mb-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
           Rating Breakdown
         </h3>
@@ -121,7 +121,7 @@ export default async function EntryDetailPage({
                     size={16}
                     className={
                       star <= r.score
-                        ? "fill-orange-400 text-orange-400"
+                        ? "fill-amber-400 text-amber-400"
                         : "fill-none text-gray-200"
                     }
                   />
@@ -136,14 +136,14 @@ export default async function EntryDetailPage({
       </div>
 
       {/* Details */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 mb-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
           Details
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-              <Calendar size={15} className="text-orange-500" />
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+              <Calendar size={15} className="text-emerald-600" />
             </div>
             <div>
               <div className="text-xs text-gray-400">Date</div>
@@ -159,8 +159,8 @@ export default async function EntryDetailPage({
 
           {entry.cost && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                <DollarSign size={15} className="text-orange-500" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <DollarSign size={15} className="text-emerald-600" />
               </div>
               <div>
                 <div className="text-xs text-gray-400">Cost</div>
@@ -173,8 +173,8 @@ export default async function EntryDetailPage({
 
           {entry.quantity && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                <Hash size={15} className="text-orange-500" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <Hash size={15} className="text-emerald-600" />
               </div>
               <div>
                 <div className="text-xs text-gray-400">Quantity</div>
@@ -189,7 +189,7 @@ export default async function EntryDetailPage({
 
       {/* Location details */}
       {(entry.address || entry.phone_number || entry.location_notes) && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Location Info
           </h3>
@@ -205,7 +205,7 @@ export default async function EntryDetailPage({
                 <span className="text-gray-400">Phone: </span>
                 <a
                   href={`tel:${entry.phone_number}`}
-                  className="text-orange-500 hover:text-orange-600"
+                  className="text-emerald-600 hover:text-emerald-700"
                 >
                   {entry.phone_number}
                 </a>
@@ -223,7 +223,7 @@ export default async function EntryDetailPage({
 
       {/* Notes */}
       {entry.notes && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Notes
           </h3>
@@ -237,14 +237,14 @@ export default async function EntryDetailPage({
       <div className="flex gap-3 mt-6">
         <Link
           href={`/entries/new?from=${entry.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold py-3 px-4 rounded-xl transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-semibold py-3 px-4 rounded-xl transition-colors"
         >
           <RotateCcw size={16} />
           Log Again
         </Link>
         <Link
           href={`/entries/${entry.id}/edit`}
-          className="flex-1 inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+          className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
         >
           <Pencil size={16} />
           Edit Entry

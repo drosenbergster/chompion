@@ -146,8 +146,8 @@ export default async function PublicProfilePage({
     .eq("follower_id", profile.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
-      <nav className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50/60 to-stone-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 flex items-center justify-between h-14">
           <Link href="/" className="text-xl font-bold text-gray-900">
             Chompion
@@ -155,7 +155,7 @@ export default async function PublicProfilePage({
           {!currentUser && (
             <Link
               href="/signup"
-              className="text-sm font-medium text-orange-500 hover:text-orange-600"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
             >
               Join Chompion
             </Link>
@@ -163,7 +163,7 @@ export default async function PublicProfilePage({
           {currentUser && (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-orange-500 hover:text-orange-600"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
             >
               My Dashboard
             </Link>
@@ -173,8 +173,8 @@ export default async function PublicProfilePage({
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6 pb-16">
         {/* Profile header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 text-center animate-fade-in">
-          <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-4xl mx-auto mb-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6 text-center animate-fade-in">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-4xl mx-auto mb-3">
             {primaryEmoji}
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -198,7 +198,7 @@ export default async function PublicProfilePage({
           </div>
 
           {trackedFoods.length > 0 && (
-            <p className="text-sm text-orange-600 font-medium mb-4">
+            <p className="text-sm text-emerald-700 font-medium mb-4">
               {trackedFoods.map((f) => {
                 const em = FOOD_EMOJIS[f.theme_key] ?? FOOD_EMOJIS.generic;
                 return `${em} ${f.name}`;
@@ -215,7 +215,7 @@ export default async function PublicProfilePage({
 
         {/* Empty state */}
         {totalEntryCount === 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center">
+          <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center">
             <div className="text-5xl mb-3">{primaryEmoji}</div>
             <p className="text-gray-500">
               {profile.display_name} hasn&apos;t logged any chomps yet.
@@ -254,7 +254,7 @@ export default async function PublicProfilePage({
 
               {/* Behavioral Radar */}
               {foodCount >= 5 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
                   <h3 className="font-semibold text-gray-900 mb-1">
                     {food.name} Personality
                   </h3>
@@ -268,9 +268,9 @@ export default async function PublicProfilePage({
 
               {/* Top rated */}
               {topRated.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+                <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
                   <div className="flex items-center gap-2 mb-4">
-                    <UtensilsCrossed size={18} className="text-orange-500" />
+                    <UtensilsCrossed size={18} className="text-emerald-600" />
                     <h3 className="font-semibold text-gray-900">Top Rated</h3>
                   </div>
                   <div className="space-y-3">
@@ -287,7 +287,7 @@ export default async function PublicProfilePage({
                           key={entry.id}
                           className="flex items-center gap-3"
                         >
-                          <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600 flex-shrink-0">
+                          <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
                             {i + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -298,13 +298,13 @@ export default async function PublicProfilePage({
                               <MapPin size={10} />
                               {entry.city}
                               {subtypeName && (
-                                <span className="text-orange-400 ml-1">
+                                <span className="text-emerald-500 ml-1">
                                   &middot; {subtypeName}
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-0.5 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0">
+                          <div className="flex items-center gap-0.5 bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0">
                             <Star size={11} className="fill-white" />
                             {Number(entry.composite_score).toFixed(1)}
                           </div>
@@ -316,7 +316,7 @@ export default async function PublicProfilePage({
               )}
 
               {/* Recent activity */}
-              <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+              <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
                 <h3 className="font-semibold text-gray-900 mb-4">
                   Recent Activity
                 </h3>
@@ -339,7 +339,7 @@ export default async function PublicProfilePage({
                         </div>
                       </div>
                       {entry.composite_score && (
-                        <div className="text-sm font-semibold text-orange-600 flex-shrink-0">
+                        <div className="text-sm font-semibold text-emerald-700 flex-shrink-0">
                           {Number(entry.composite_score).toFixed(1)}
                         </div>
                       )}
@@ -353,7 +353,7 @@ export default async function PublicProfilePage({
 
         {/* If user has entries but none qualify (all <3), show a simple recent list */}
         {totalEntryCount > 0 && qualifyingFoods.length === 0 && (
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+          <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
             <h3 className="font-semibold text-gray-900 mb-4">
               Recent Activity
             </h3>
@@ -376,7 +376,7 @@ export default async function PublicProfilePage({
                     </div>
                   </div>
                   {entry.composite_score && (
-                    <div className="text-sm font-semibold text-orange-600 flex-shrink-0">
+                    <div className="text-sm font-semibold text-emerald-700 flex-shrink-0">
                       {Number(entry.composite_score).toFixed(1)}
                     </div>
                   )}

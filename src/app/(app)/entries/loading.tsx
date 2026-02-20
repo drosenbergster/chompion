@@ -14,7 +14,7 @@ export default function EntriesLoading() {
         {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="bg-white rounded-2xl border border-orange-100 p-4"
+            className="bg-white rounded-2xl border border-emerald-100 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">

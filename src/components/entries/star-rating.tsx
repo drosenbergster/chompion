@@ -43,7 +43,7 @@ export function StarRating({ value, onChange, label, weight }: StarRatingProps) 
               className={cn(
                 "transition-colors",
                 star <= value
-                  ? "fill-orange-400 text-orange-400"
+                  ? "fill-amber-400 text-amber-400"
                   : "fill-none text-gray-300",
                 justClicked === star && "animate-scale-pop"
               )}

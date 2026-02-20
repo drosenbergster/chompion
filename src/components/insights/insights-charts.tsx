@@ -22,19 +22,19 @@ import {
 import { BehavioralRadarChart } from "@/components/profile/behavioral-radar-chart";
 
 const COLORS = [
-  "#f97316",
-  "#fb923c",
-  "#fdba74",
-  "#fed7aa",
-  "#ffedd5",
-  "#ea580c",
-  "#c2410c",
-  "#9a3412",
+  "#059669",
+  "#10b981",
+  "#34d399",
+  "#6ee7b7",
+  "#a7f3d0",
+  "#047857",
+  "#065f46",
+  "#064e3b",
 ];
 
 const TOOLTIP_STYLE = {
   borderRadius: 12,
-  border: "1px solid #fed7aa",
+  border: "1px solid #a7f3d0",
   boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
   fontSize: 13,
 };
@@ -76,7 +76,7 @@ function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+    <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
       <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
       <p className="text-xs text-gray-400 mb-4">{subtitle}</p>
       {children}
@@ -115,9 +115,9 @@ export function InsightsCharts({
     <div className="space-y-6 animate-stagger">
       {/* Summary Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-orange-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-            <Hash size={16} className="text-orange-500" />
+        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Hash size={16} className="text-emerald-600" />
           </div>
           <div>
             <div className="text-lg font-bold text-gray-900">
@@ -126,9 +126,9 @@ export function InsightsCharts({
             <div className="text-[11px] text-gray-400">Total Chomps</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-orange-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-            <DollarSign size={16} className="text-orange-500" />
+        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <DollarSign size={16} className="text-emerald-600" />
           </div>
           <div>
             <div className="text-lg font-bold text-gray-900">
@@ -139,9 +139,9 @@ export function InsightsCharts({
             <div className="text-[11px] text-gray-400">Total Spent</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-orange-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-            <UtensilsCrossed size={16} className="text-orange-500" />
+        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <UtensilsCrossed size={16} className="text-emerald-600" />
           </div>
           <div>
             <div className="text-lg font-bold text-gray-900">
@@ -150,9 +150,9 @@ export function InsightsCharts({
             <div className="text-[11px] text-gray-400">Restaurants</div>
           </div>
         </div>
-        <div className="bg-white rounded-xl border border-orange-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-            <MapPin size={16} className="text-orange-500" />
+        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <MapPin size={16} className="text-emerald-600" />
           </div>
           <div>
             <div className="text-lg font-bold text-gray-900">
@@ -225,7 +225,7 @@ export function InsightsCharts({
                 />
                 <Bar
                   dataKey="avgRating"
-                  fill="#f97316"
+                  fill="#059669"
                   radius={[0, 6, 6, 0]}
                   barSize={18}
                 />
@@ -277,7 +277,7 @@ export function InsightsCharts({
                   />
                   <Bar
                     dataKey="count"
-                    fill="#f97316"
+                    fill="#059669"
                     radius={[6, 6, 0, 0]}
                     barSize={28}
                   />
@@ -373,7 +373,7 @@ export function InsightsCharts({
                   />
                   <Bar
                     dataKey="total"
-                    fill="#f97316"
+                    fill="#059669"
                     radius={[6, 6, 0, 0]}
                     barSize={28}
                   />
@@ -398,7 +398,7 @@ export function InsightsCharts({
                   <div className="flex items-center gap-2">
                     <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-orange-400 rounded-full"
+                        className="h-full bg-emerald-500 rounded-full"
                         style={{ width: `${(cat.avg / 5) * 100}%` }}
                       />
                     </div>

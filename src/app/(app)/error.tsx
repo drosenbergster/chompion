@@ -16,7 +16,7 @@ export default function AppError({
 
   return (
     <div className="pb-20 md:pb-8">
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
         <div className="text-5xl mb-4">😵</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">
           Something went wrong
@@ -27,7 +27,7 @@ export default function AppError({
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={reset}
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors"
           >
             Try Again
           </button>

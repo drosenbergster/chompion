@@ -60,7 +60,7 @@ export default async function SettingsPage({
       />
 
       {/* Rating Categories with food selector */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
         {passionFoods.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-3 mb-1">
             {passionFoods.map((food) => (
@@ -69,7 +69,7 @@ export default async function SettingsPage({
                 href={`/settings?food=${food.id}`}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-xl text-sm font-medium transition-colors ${
                   food.id === activeFood.id
-                    ? "bg-orange-500 text-white"
+                    ? "bg-emerald-600 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -88,7 +88,7 @@ export default async function SettingsPage({
       </div>
 
       {/* Logout */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-6">
         <form action={logout}>
           <button
             type="submit"

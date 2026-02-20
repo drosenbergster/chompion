@@ -44,7 +44,7 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
             onClick={() => updateParams("sort", opt.value)}
             className={`px-3 py-1.5 text-xs font-medium transition-colors ${
               currentSort === opt.value
-                ? "bg-orange-500 text-white"
+                ? "bg-emerald-600 text-white"
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
@@ -57,7 +57,7 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
         <select
           value={currentCity}
           onChange={(e) => updateParams("city", e.target.value)}
-          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 outline-none"
+          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100 outline-none"
         >
           <option value="">All cities</option>
           {cities.map((c) => (
@@ -72,7 +72,7 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
         <select
           value={currentOrder}
           onChange={(e) => updateParams("order", e.target.value)}
-          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-orange-400 focus:ring-1 focus:ring-orange-100 outline-none"
+          className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100 outline-none"
         >
           <option value="">All orders</option>
           {orders.map((o) => (
@@ -86,7 +86,7 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
       {(currentCity || currentOrder || currentSort !== "date") && (
         <button
           onClick={() => router.push("/entries")}
-          className="px-3 py-1.5 text-xs text-orange-500 hover:text-orange-600 font-medium"
+          className="px-3 py-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
         >
           Reset
         </button>

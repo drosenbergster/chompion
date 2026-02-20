@@ -63,9 +63,9 @@ export function ProfileEditor({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+    <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
       <div className="flex items-center gap-2 mb-4">
-        <User size={18} className="text-orange-500" />
+        <User size={18} className="text-emerald-600" />
         <h2 className="text-lg font-semibold text-gray-900">Profile</h2>
       </div>
 
@@ -78,7 +78,7 @@ export function ProfileEditor({
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900"
           />
         </div>
 
@@ -92,7 +92,7 @@ export function ProfileEditor({
             onChange={(e) =>
               setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))
             }
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900"
           />
           <p className="text-xs text-gray-400 mt-1">
             Lowercase letters, numbers, and underscores only
@@ -118,7 +118,7 @@ export function ProfileEditor({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2.5 px-5 rounded-xl transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium py-2.5 px-5 rounded-xl transition-colors text-sm"
           >
             {saving ? "Saving..." : saved ? (
               <>

@@ -139,7 +139,7 @@ export default async function DashboardPage({
             href={`/dashboard?food=${food.id}`}
             className={`flex-shrink-0 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
               food.id === defaultFood.id
-                ? "bg-orange-500 text-white shadow-md"
+                ? "bg-emerald-600 text-white shadow-md"
                 : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             }`}
           >
@@ -148,44 +148,44 @@ export default async function DashboardPage({
         ))}
         <Link
           href="/passion-foods"
-          className="flex-shrink-0 px-4 py-2.5 rounded-2xl text-sm font-medium text-orange-500 border border-dashed border-orange-300 hover:bg-orange-50 transition-colors"
+          className="flex-shrink-0 px-4 py-2.5 rounded-2xl text-sm font-medium text-emerald-600 border border-dashed border-emerald-300 hover:bg-emerald-50 transition-colors"
         >
           + Add
         </Link>
       </div>
 
       {/* Stats grid */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-fade-in">
         <h2 className="text-2xl font-bold text-gray-900 mb-1">
           {foodEmoji} {defaultFood.name}
         </h2>
         <p className="text-gray-500 text-sm mb-5">Your chomp stats</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-stagger">
-          <div className="bg-orange-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-orange-600">
+          <div className="bg-emerald-50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-emerald-700">
               {entryCount}
             </div>
             <div className="text-xs text-gray-500 mt-1">Total Chomps</div>
           </div>
-          <div className="bg-orange-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-orange-600">
+          <div className="bg-emerald-50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-emerald-700">
               {avgRating ? avgRating.toFixed(1) : "--"}
             </div>
             <div className="text-xs text-gray-500 mt-1">Avg Rating</div>
           </div>
-          <div className="bg-orange-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-orange-600 flex items-center justify-center gap-1">
-              {streak > 0 && <Flame size={20} className="text-orange-500" />}
+          <div className="bg-emerald-50 rounded-xl p-4 text-center">
+            <div className="text-3xl font-bold text-emerald-700 flex items-center justify-center gap-1">
+              {streak > 0 && <Flame size={20} className="text-amber-500" />}
               {streak > 0 ? streak : "--"}
             </div>
             <div className="text-xs text-gray-500 mt-1">
               Week Streak
             </div>
           </div>
-          <div className="bg-orange-50 rounded-xl p-4 text-center">
+          <div className="bg-emerald-50 rounded-xl p-4 text-center">
             <div
-              className="text-lg font-bold text-orange-600 truncate leading-tight mt-1"
+              className="text-lg font-bold text-emerald-700 truncate leading-tight mt-1"
               title={mostVisited?.[0]}
             >
               {mostVisited ? mostVisited[0] : "--"}
@@ -200,9 +200,9 @@ export default async function DashboardPage({
       {entryCount === 0 && (
         <Link
           href="/entries/new"
-          className="flex items-center gap-4 bg-orange-50 hover:bg-orange-100 rounded-2xl p-4 transition-colors group animate-fade-in"
+          className="flex items-center gap-4 bg-emerald-50 hover:bg-emerald-100 rounded-2xl p-4 transition-colors group animate-fade-in"
         >
-          <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
             <Plus size={18} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -219,9 +219,9 @@ export default async function DashboardPage({
 
       {/* Top Rated */}
       {topRated.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp size={18} className="text-orange-500" />
+            <TrendingUp size={18} className="text-emerald-600" />
             <h3 className="font-semibold text-gray-900">Top Rated</h3>
           </div>
           <div className="space-y-3">
@@ -239,18 +239,18 @@ export default async function DashboardPage({
                   href={`/entries/${entry.id}`}
                   className="flex items-center gap-3 group"
                 >
-                  <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-sm font-bold text-orange-600 flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                    <div className="font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
                       {entry.restaurant_name}
                     </div>
                     <div className="text-xs text-gray-400 flex items-center gap-1">
                       <MapPin size={10} />
                       {entry.city}
                       {subtypeName && (
-                        <span className="text-orange-400 ml-1">
+                        <span className="text-emerald-500 ml-1">
                           &middot; {subtypeName}
                         </span>
                       )}
@@ -269,16 +269,16 @@ export default async function DashboardPage({
                             size={12}
                             className={
                               filled
-                                ? "text-orange-400 fill-orange-400"
+                                ? "text-amber-400 fill-amber-400"
                                 : half
-                                  ? "text-orange-400 fill-orange-200"
+                                  ? "text-amber-400 fill-amber-200"
                                   : "text-gray-200 fill-gray-100"
                             }
                           />
                         );
                       })}
                     </div>
-                    <span className="text-xs font-bold text-orange-600 tabular-nums">
+                    <span className="text-xs font-bold text-emerald-700 tabular-nums">
                       {Number(entry.composite_score).toFixed(1)}
                     </span>
                   </div>
@@ -291,12 +291,12 @@ export default async function DashboardPage({
 
       {/* Recent Entries */}
       {recentEntries.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Recent Chomps</h3>
             <Link
               href="/entries"
-              className="text-sm text-orange-500 hover:text-orange-600 font-medium"
+              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
             >
               View All
             </Link>
@@ -309,7 +309,7 @@ export default async function DashboardPage({
                 className="flex items-center justify-between group"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                  <div className="font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
                     {entry.restaurant_name}
                   </div>
                   <div className="text-xs text-gray-400">
@@ -323,7 +323,7 @@ export default async function DashboardPage({
                   </div>
                 </div>
                 {entry.composite_score && (
-                  <div className="text-sm font-semibold text-orange-600 flex-shrink-0">
+                  <div className="text-sm font-semibold text-emerald-700 flex-shrink-0">
                     {Number(entry.composite_score).toFixed(1)}
                   </div>
                 )}

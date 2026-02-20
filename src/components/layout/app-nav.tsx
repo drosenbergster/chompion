@@ -20,7 +20,8 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-const mobileNavItems = navItems.filter((i) => i.href !== "/friends");
+const mobileLeftItems = navItems.slice(0, 2);
+const mobileRightItems = navItems.slice(2);
 
 export function AppNav({ profile }: AppNavProps) {
   const pathname = usePathname();
@@ -29,7 +30,7 @@ export function AppNav({ profile }: AppNavProps) {
   return (
     <>
       {/* Desktop top nav */}
-      <nav className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-16">
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="text-2xl font-bold text-gray-900">
@@ -48,7 +49,7 @@ export function AppNav({ profile }: AppNavProps) {
                   className={cn(
                     "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-orange-100 text-orange-700"
+                      ? "bg-emerald-100 text-emerald-700"
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   )}
                 >
@@ -60,27 +61,17 @@ export function AppNav({ profile }: AppNavProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Desktop: prominent labeled button */}
             <Link
               href="/entries/new"
               className={cn(
                 "hidden md:inline-flex items-center gap-2 font-semibold px-5 py-2.5 rounded-xl transition-colors",
                 isOnNewEntry
-                  ? "bg-orange-600 text-white"
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                  ? "bg-emerald-700 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
               )}
             >
               <Plus size={18} strokeWidth={2.5} />
               Log Chomp
-            </Link>
-
-            {/* Mobile: compact icon button (secondary — FAB is primary) */}
-            <Link
-              href="/entries/new"
-              className="md:hidden bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors"
-              title="Log a Chomp"
-            >
-              <Plus size={20} />
             </Link>
 
             <div className="hidden md:flex items-center gap-3">
@@ -102,10 +93,9 @@ export function AppNav({ profile }: AppNavProps) {
       </nav>
 
       {/* Mobile bottom nav with center FAB */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-orange-100 z-50 safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-emerald-100 z-50 safe-area-pb">
         <div className="flex items-center justify-around h-16 relative">
-          {/* Left nav items */}
-          {mobileNavItems.slice(0, 2).map((item) => {
+          {mobileLeftItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (
@@ -113,33 +103,31 @@ export function AppNav({ profile }: AppNavProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors",
+                  "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-medium transition-colors",
                   isActive
-                    ? "text-orange-600"
+                    ? "text-emerald-700"
                     : "text-gray-400 hover:text-gray-600"
                 )}
               >
-                <Icon size={22} />
+                <Icon size={20} />
                 {item.label}
               </Link>
             );
           })}
 
-          {/* Center FAB — the primary action */}
           <Link
             href="/entries/new"
             className={cn(
               "flex flex-col items-center justify-center -mt-7 w-16 h-16 rounded-full shadow-lg transition-all active:scale-95",
               isOnNewEntry
-                ? "bg-orange-600 shadow-orange-300"
-                : "bg-orange-500 hover:bg-orange-600 shadow-orange-200"
+                ? "bg-emerald-700 shadow-emerald-300"
+                : "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200"
             )}
           >
             <Plus size={28} className="text-white" strokeWidth={2.5} />
           </Link>
 
-          {/* Right nav items */}
-          {mobileNavItems.slice(2).map((item) => {
+          {mobileRightItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (
@@ -147,13 +135,13 @@ export function AppNav({ profile }: AppNavProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-colors",
+                  "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-medium transition-colors",
                   isActive
-                    ? "text-orange-600"
+                    ? "text-emerald-700"
                     : "text-gray-400 hover:text-gray-600"
                 )}
               >
-                <Icon size={22} />
+                <Icon size={20} />
                 {item.label}
               </Link>
             );

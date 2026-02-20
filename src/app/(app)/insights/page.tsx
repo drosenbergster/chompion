@@ -3,8 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { InsightsCharts } from "@/components/insights/insights-charts";
 import Link from "next/link";
 import { Plus, BarChart3 } from "lucide-react";
+import { FOOD_EMOJIS } from "@/lib/constants";
 
-export default async function InsightsPage() {
+export default async function InsightsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ food?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -12,14 +18,19 @@ export default async function InsightsPage() {
 
   if (!user) redirect("/login");
 
-  const { data: passionFood } = await supabase
+  const { data: passionFoods } = await supabase
     .from("passion_foods")
     .select("*")
     .eq("user_id", user.id)
-    .eq("is_default", true)
-    .single();
+    .order("is_default", { ascending: false });
 
-  if (!passionFood) redirect("/dashboard");
+  if (!passionFoods || passionFoods.length === 0) redirect("/dashboard");
+
+  const selectedFood = params.food
+    ? passionFoods.find((f) => f.id === params.food)
+    : undefined;
+  const passionFood =
+    selectedFood ?? passionFoods.find((f) => f.is_default) ?? passionFoods[0];
 
   const { data: entries } = await supabase
     .from("entries")
@@ -49,9 +60,9 @@ export default async function InsightsPage() {
     return (
       <div className="pb-20 md:pb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Insights</h1>
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
-          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BarChart3 className="text-orange-500" size={28} />
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BarChart3 className="text-emerald-600" size={28} />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             No data yet
@@ -62,7 +73,7 @@ export default async function InsightsPage() {
           </p>
           <Link
             href="/entries/new"
-            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             <Plus size={20} />
             Log a Chomp
@@ -244,7 +255,7 @@ export default async function InsightsPage() {
 
   return (
     <div className="pb-20 md:pb-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Insights</h1>
           <p className="text-sm text-gray-500">
@@ -252,6 +263,24 @@ export default async function InsightsPage() {
           </p>
         </div>
       </div>
+
+      {passionFoods.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6">
+          {passionFoods.map((food) => (
+            <Link
+              key={food.id}
+              href={`/insights?food=${food.id}`}
+              className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
+                food.id === passionFood.id
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+              }`}
+            >
+              {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <InsightsCharts
         summaryStats={summaryStats}

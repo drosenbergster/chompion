@@ -73,7 +73,7 @@ export default async function EditEntryPage({
     <div className="pb-20 md:pb-8">
       <Link
         href={`/entries/${entry.id}`}
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors mb-4"
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600 transition-colors mb-4"
       >
         <ArrowLeft size={16} />
         Back to chomp

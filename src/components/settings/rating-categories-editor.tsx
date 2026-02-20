@@ -203,7 +203,7 @@ export function RatingCategoriesEditor({
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Star size={18} className="text-orange-500" />
+          <Star size={18} className="text-amber-500" />
           <h2 className="text-lg font-semibold text-gray-900">
             Rating Categories
           </h2>
@@ -224,10 +224,10 @@ export function RatingCategoriesEditor({
           .filter((d) => !currentNames.has(d.name.toLowerCase()))
           .map((d) => d.name);
         return missing.length > 0 ? (
-          <div className="mb-4 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 flex items-start gap-3">
-            <Lightbulb size={16} className="text-orange-500 mt-0.5 flex-shrink-0" />
+          <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-start gap-3">
+            <Lightbulb size={16} className="text-emerald-600 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-orange-800">
+              <p className="text-sm text-emerald-800">
                 For richer insights, consider adding{" "}
                 <span className="font-medium">{missing.join(" and ")}</span>{" "}
                 to your rating categories.
@@ -235,7 +235,7 @@ export function RatingCategoriesEditor({
             </div>
             <button
               onClick={() => setNudgeDismissed(true)}
-              className="text-orange-400 hover:text-orange-600 flex-shrink-0"
+              className="text-emerald-400 hover:text-emerald-600 flex-shrink-0"
             >
               <X size={14} />
             </button>
@@ -253,7 +253,7 @@ export function RatingCategoriesEditor({
                 handleUpdateCategory(cat.id, "name", e.target.value)
               }
               placeholder="Category name"
-              className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
+              className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
             />
             <div className="relative w-20 flex-shrink-0">
               <input
@@ -264,7 +264,7 @@ export function RatingCategoriesEditor({
                 onChange={(e) =>
                   handleUpdateCategory(cat.id, "weight", e.target.value)
                 }
-                className="w-full px-3 py-2 pr-7 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm text-gray-900 text-right"
+                className="w-full px-3 py-2 pr-7 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm text-gray-900 text-right"
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
                 %
@@ -285,7 +285,7 @@ export function RatingCategoriesEditor({
       <div className="mt-3 flex items-center gap-3">
         <button
           onClick={handleAddCategory}
-          className="inline-flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600 font-medium"
+          className="inline-flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
         >
           <Plus size={15} />
           Add Category
@@ -306,7 +306,7 @@ export function RatingCategoriesEditor({
                 ? "bg-green-400"
                 : totalWeight > 100
                   ? "bg-red-400"
-                  : "bg-orange-400"
+                  : "bg-amber-400"
             }`}
             style={{ width: `${Math.min(totalWeight, 100)}%` }}
           />
@@ -317,7 +317,7 @@ export function RatingCategoriesEditor({
               ? "text-green-600"
               : totalWeight > 100
                 ? "text-red-600"
-                : "text-orange-600"
+                : "text-amber-600"
           }`}
         >
           {totalWeight}%
@@ -337,7 +337,7 @@ export function RatingCategoriesEditor({
         <button
           type="button"
           onClick={handleDistributeEvenly}
-          className="mt-2 text-xs text-orange-500 hover:text-orange-600 font-medium"
+          className="mt-2 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
         >
           Distribute evenly
         </button>
@@ -353,7 +353,7 @@ export function RatingCategoriesEditor({
         <button
           onClick={handleSave}
           disabled={saving || !isValidWeight}
-          className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2.5 px-5 rounded-xl transition-colors text-sm"
+          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium py-2.5 px-5 rounded-xl transition-colors text-sm"
         >
           {saving ? "Saving..." : "Save Categories"}
         </button>

@@ -33,7 +33,7 @@ export default async function AppLayout({
       {/* Semi-transparent overlay so content stays readable */}
       <div
         className="fixed inset-0 z-[1]"
-        style={{ backgroundColor: "rgba(255, 255, 255, 0.92)" }}
+        style={{ backgroundColor: "rgba(253, 251, 247, 0.93)" }}
         aria-hidden="true"
       />
 

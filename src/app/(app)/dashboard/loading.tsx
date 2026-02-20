@@ -10,7 +10,7 @@ export default function DashboardLoading() {
       </div>
 
       {/* Stats card */}
-      <div className="bg-white rounded-2xl border border-orange-100 p-5">
+      <div className="bg-white rounded-2xl border border-emerald-100 p-5">
         <Skeleton className="h-7 w-32 mb-2" />
         <Skeleton className="h-4 w-40 mb-5" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -21,7 +21,7 @@ export default function DashboardLoading() {
       </div>
 
       {/* Top rated */}
-      <div className="bg-white rounded-2xl border border-orange-100 p-5">
+      <div className="bg-white rounded-2xl border border-emerald-100 p-5">
         <Skeleton className="h-5 w-24 mb-4" />
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
@@ -38,7 +38,7 @@ export default function DashboardLoading() {
       </div>
 
       {/* Recent entries */}
-      <div className="bg-white rounded-2xl border border-orange-100 p-5">
+      <div className="bg-white rounded-2xl border border-emerald-100 p-5">
         <Skeleton className="h-5 w-32 mb-4" />
         <div className="space-y-3">
           {[0, 1, 2, 3, 4].map((i) => (

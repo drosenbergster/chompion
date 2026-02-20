@@ -75,7 +75,7 @@ export function EntryForm({
   const [cost, setCost] = useState(
     source?.cost ? String(source.cost) : ""
   );
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(source?.notes ?? "");
   const [eatenAt, setEatenAt] = useState(
     existingEntry
       ? new Date(existingEntry.eaten_at).toISOString().slice(0, 16)
@@ -352,7 +352,7 @@ export function EntryForm({
 
   if (success) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-10 text-center animate-fade-in space-y-5">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-10 text-center animate-fade-in space-y-5">
         <div className="text-5xl animate-scale-pop">{foodEmoji}</div>
         <div>
           <h2 className="text-2xl font-bold text-gray-900 mb-1">
@@ -360,7 +360,7 @@ export function EntryForm({
           </h2>
           <p className="text-gray-500">
             {compositeScore !== null && (
-              <span className="text-orange-600 font-semibold">
+              <span className="text-emerald-700 font-semibold">
                 {compositeScore.toFixed(1)} / 5.0
               </span>
             )}
@@ -371,7 +371,7 @@ export function EntryForm({
         <div className="flex flex-col gap-3 max-w-xs mx-auto pt-2">
           <button
             onClick={handleShare}
-            className="inline-flex items-center justify-center gap-2 bg-orange-100 hover:bg-orange-200 text-orange-700 font-medium py-3 px-5 rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium py-3 px-5 rounded-xl transition-colors"
           >
             {copied ? (
               <>
@@ -387,7 +387,7 @@ export function EntryForm({
           </button>
           <button
             onClick={handleGoToDashboard}
-            className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-5 rounded-xl transition-colors"
+            className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-5 rounded-xl transition-colors"
           >
             Go to Dashboard
             <ArrowRight size={18} />
@@ -424,7 +424,7 @@ export function EntryForm({
                 }}
                 className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                   food.id === selectedFoodId
-                    ? "bg-orange-500 text-white"
+                    ? "bg-emerald-600 text-white"
                     : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
                 }`}
               >
@@ -436,7 +436,7 @@ export function EntryForm({
       )}
 
       {/* Location section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 space-y-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
           Where
         </h3>
@@ -455,7 +455,7 @@ export function EntryForm({
               value={restaurantName}
               onChange={(e) => setRestaurantName(e.target.value)}
               required
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
               placeholder="e.g., Taqueria El Farolito"
             />
           </div>
@@ -473,7 +473,7 @@ export function EntryForm({
               value={city}
               onChange={(e) => setCity(e.target.value)}
               required
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
               placeholder="e.g., San Francisco"
             />
           </div>
@@ -484,7 +484,7 @@ export function EntryForm({
             href={generateMapsLink(restaurantName, city)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600"
+            className="inline-flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700"
           >
             <MapPin size={14} />
             View on Google Maps
@@ -500,21 +500,21 @@ export function EntryForm({
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
               placeholder="Address"
             />
             <input
               type="text"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
               placeholder="Phone number"
             />
             <input
               type="text"
               value={locationNotes}
               onChange={(e) => setLocationNotes(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400 text-sm"
               placeholder="Hours, tips, reservations..."
             />
           </div>
@@ -522,13 +522,13 @@ export function EntryForm({
       </div>
 
       {/* Rating section -- moved above details for prominence */}
-      <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
             Rating
           </h3>
           {compositeScore !== null && (
-            <div className="bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-full animate-scale-pop">
+            <div className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full animate-scale-pop">
               {compositeScore.toFixed(1)} / 5.0
             </div>
           )}
@@ -563,7 +563,7 @@ export function EntryForm({
 
       {/* Details section -- collapsed by default */}
       <details className="group" open={hasEntryDetails || undefined}>
-        <summary className="bg-white rounded-2xl shadow-sm border border-orange-100 p-4 cursor-pointer hover:bg-orange-50/30 transition-colors select-none flex items-center justify-between">
+        <summary className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-4 cursor-pointer hover:bg-emerald-50/30 transition-colors select-none flex items-center justify-between">
           <span className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
             Details
           </span>
@@ -571,7 +571,7 @@ export function EntryForm({
             Order, cost, quantity, when...
           </span>
         </summary>
-        <div className="bg-white rounded-b-2xl shadow-sm border border-t-0 border-orange-100 p-5 -mt-3 space-y-4">
+        <div className="bg-white rounded-b-2xl shadow-sm border border-t-0 border-emerald-100 p-5 -mt-3 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label
@@ -586,7 +586,7 @@ export function EntryForm({
                     id="subtype"
                     value={subtypeId}
                     onChange={(e) => setSubtypeId(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 bg-white"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 bg-white"
                   >
                     <option value="">None</option>
                     {subtypes.map((st) => (
@@ -598,7 +598,7 @@ export function EntryForm({
                   <button
                     type="button"
                     onClick={() => setShowAddSubtype(true)}
-                    className="px-3 py-2.5 rounded-xl border border-dashed border-orange-300 text-orange-500 hover:bg-orange-50 transition-colors"
+                    className="px-3 py-2.5 rounded-xl border border-dashed border-emerald-300 text-emerald-600 hover:bg-emerald-50 transition-colors"
                     title="Add new order"
                   >
                     <Plus size={16} />
@@ -616,14 +616,14 @@ export function EntryForm({
                         handleAddSubtype();
                       }
                     }}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-orange-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                     placeholder="e.g., Carne Asada"
                     autoFocus
                   />
                   <button
                     type="button"
                     onClick={handleAddSubtype}
-                    className="px-3 py-2.5 rounded-xl bg-orange-500 text-white hover:bg-orange-600 transition-colors"
+                    className="px-3 py-2.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
                   >
                     <Plus size={16} />
                   </button>
@@ -654,7 +654,7 @@ export function EntryForm({
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                 placeholder="How many?"
               />
             </div>
@@ -673,7 +673,7 @@ export function EntryForm({
                 step="0.01"
                 value={cost}
                 onChange={(e) => setCost(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                 placeholder="0.00"
               />
             </div>
@@ -691,7 +691,7 @@ export function EntryForm({
               type="datetime-local"
               value={eatenAt}
               onChange={(e) => setEatenAt(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900"
             />
           </div>
 
@@ -707,7 +707,7 @@ export function EntryForm({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400 resize-none"
               placeholder="How was the experience?"
             />
           </div>
@@ -723,7 +723,7 @@ export function EntryForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-lg"
+        className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-3.5 px-4 rounded-xl transition-colors text-lg"
       >
         {loading ? "Saving..." : isEditing ? "Update Chomp" : "Log Chomp"}
       </button>
@@ -770,7 +770,7 @@ function MoveToListDisclosure({
               onClick={() => onSelectFood(food.id)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 food.id === selectedFoodId
-                  ? "bg-orange-500 text-white"
+                  ? "bg-emerald-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >

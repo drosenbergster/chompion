@@ -166,7 +166,7 @@ export function MyFoodsManager({
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
+          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
         >
           <Plus size={16} />
           Add List
@@ -184,7 +184,7 @@ export function MyFoodsManager({
           return (
             <div
               key={food.id}
-              className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5"
+              className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5"
             >
               <div className="flex items-center gap-4">
                 <div className="text-4xl flex-shrink-0">{emoji}</div>
@@ -194,7 +194,7 @@ export function MyFoodsManager({
                       {food.name}
                     </h3>
                     {food.is_default && (
-                      <span className="flex-shrink-0 text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">
+                      <span className="flex-shrink-0 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
                         Default
                       </span>
                     )}
@@ -208,7 +208,7 @@ export function MyFoodsManager({
                   {!food.is_default && (
                     <button
                       onClick={() => handleSetDefault(food.id)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-orange-600 hover:bg-orange-50 transition-colors"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
                       title="Set as default"
                     >
                       <Star size={14} />
@@ -286,7 +286,7 @@ export function MyFoodsManager({
                       onClick={() => setSelectedFood(food.name)}
                       className={`p-3 rounded-xl border-2 text-left transition-all text-sm font-medium ${
                         selectedFood === food.name
-                          ? "border-orange-400 bg-orange-50 text-orange-700"
+                          ? "border-emerald-400 bg-emerald-50 text-emerald-700"
                           : "border-gray-100 hover:border-gray-200 text-gray-700"
                       }`}
                     >
@@ -297,7 +297,7 @@ export function MyFoodsManager({
                 </div>
                 <button
                   onClick={() => setAddingCustom(true)}
-                  className="w-full p-3 rounded-xl border-2 border-dashed border-gray-200 hover:border-orange-300 text-gray-500 hover:text-orange-500 transition-all text-sm font-medium text-center"
+                  className="w-full p-3 rounded-xl border-2 border-dashed border-gray-200 hover:border-emerald-300 text-gray-500 hover:text-emerald-600 transition-all text-sm font-medium text-center"
                 >
                   Something else...
                 </button>
@@ -319,7 +319,7 @@ export function MyFoodsManager({
                   onChange={(e) => setCustomFood(e.target.value)}
                   placeholder="Enter a food to track..."
                   autoFocus
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -343,7 +343,7 @@ export function MyFoodsManager({
                 (!addingCustom && !selectedFood) ||
                 (addingCustom && !customFood.trim())
               }
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
             >
               {loading ? "Adding..." : "Add List"}
             </button>

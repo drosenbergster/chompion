@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MapPin, Star, Plus, ChevronRight } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { EntryFilters } from "@/components/entries/entry-filters";
+import { FOOD_EMOJIS } from "@/lib/constants";
 
 export default async function EntriesPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function EntriesPage({
     sort?: string;
     city?: string;
     order?: string;
+    food?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -23,14 +25,19 @@ export default async function EntriesPage({
 
   if (!user) redirect("/login");
 
-  const { data: passionFood } = await supabase
+  const { data: passionFoods } = await supabase
     .from("passion_foods")
     .select("*")
     .eq("user_id", user.id)
-    .eq("is_default", true)
-    .single();
+    .order("is_default", { ascending: false });
 
-  if (!passionFood) redirect("/dashboard");
+  if (!passionFoods || passionFoods.length === 0) redirect("/dashboard");
+
+  const selectedFood = params.food
+    ? passionFoods.find((f) => f.id === params.food)
+    : undefined;
+  const passionFood =
+    selectedFood ?? passionFoods.find((f) => f.is_default) ?? passionFoods[0];
 
   const { data: allEntries } = await supabase
     .from("entries")
@@ -131,12 +138,30 @@ export default async function EntriesPage({
         </div>
         <Link
           href="/entries/new"
-          className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
+          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
         >
           <Plus size={16} />
           Log Chomp
         </Link>
       </div>
+
+      {passionFoods.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-4">
+          {passionFoods.map((food) => (
+            <Link
+              key={food.id}
+              href={`/entries?food=${food.id}`}
+              className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
+                food.id === passionFood.id
+                  ? "bg-emerald-600 text-white shadow-md"
+                  : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+              }`}
+            >
+              {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {totalCount > 0 && (
         <div className="mb-4">
@@ -145,7 +170,7 @@ export default async function EntriesPage({
       )}
 
       {entries.length === 0 && !isFiltered ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-12 text-center animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
           <div className="text-6xl mb-4">🍽️</div>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             No chomps yet!
@@ -155,14 +180,14 @@ export default async function EntriesPage({
           </p>
           <Link
             href="/entries/new"
-            className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
+            className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
           >
             <Plus size={18} />
             Log Your First Chomp
           </Link>
         </div>
       ) : entries.length === 0 && isFiltered ? (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-8 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 text-center">
           <p className="text-gray-500">No chomps match your filters.</p>
         </div>
       ) : (
@@ -177,16 +202,16 @@ export default async function EntriesPage({
               <Link
                 key={entry.id}
                 href={`/entries/${entry.id}`}
-                className="block bg-white rounded-2xl shadow-sm border border-orange-100 p-4 hover:border-orange-300 hover:shadow-md transition-all group"
+                className="block bg-white rounded-2xl shadow-sm border border-emerald-100 p-4 hover:border-emerald-300 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate group-hover:text-orange-600 transition-colors">
+                      <h3 className="font-semibold text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
                         {entry.restaurant_name}
                       </h3>
                       {subtypeName && (
-                        <span className="flex-shrink-0 text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-medium">
+                        <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
                           {subtypeName}
                         </span>
                       )}
@@ -223,14 +248,14 @@ export default async function EntriesPage({
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {/* Composite score badge */}
                     {entry.composite_score && (
-                      <div className="flex items-center gap-0.5 bg-orange-500 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
+                      <div className="flex items-center gap-0.5 bg-emerald-600 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
                         <Star size={13} className="fill-white" />
                         {Number(entry.composite_score).toFixed(1)}
                       </div>
                     )}
                     <ChevronRight
                       size={16}
-                      className="text-gray-300 group-hover:text-orange-400 transition-colors"
+                      className="text-gray-300 group-hover:text-emerald-500 transition-colors"
                     />
                   </div>
                 </div>

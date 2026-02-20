@@ -83,8 +83,8 @@ export default async function PublicEntryPage({ params }: PageProps) {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
-      <nav className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50/60 to-stone-50">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-emerald-100 sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 flex items-center justify-between h-14">
           <Link href="/" className="text-xl font-bold text-gray-900">
             Chompion
@@ -92,14 +92,14 @@ export default async function PublicEntryPage({ params }: PageProps) {
           {currentUser ? (
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-orange-500 hover:text-orange-600"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
             >
               My Dashboard
             </Link>
           ) : (
             <Link
               href="/signup"
-              className="text-sm font-medium text-orange-500 hover:text-orange-600"
+              className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
             >
               Join Chompion
             </Link>
@@ -110,7 +110,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-4 pb-16">
         <Link
           href={`/u/${username}`}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-500 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600 transition-colors"
         >
           <ArrowLeft size={16} />
           @{username}&apos;s profile
@@ -120,14 +120,14 @@ export default async function PublicEntryPage({ params }: PageProps) {
         <div className="flex items-center gap-3 mb-2">
           <Link
             href={`/u/${username}`}
-            className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xl hover:ring-2 hover:ring-orange-300 transition-all"
+            className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-xl hover:ring-2 hover:ring-emerald-300 transition-all"
           >
             {emoji}
           </Link>
           <div>
             <Link
               href={`/u/${username}`}
-              className="font-semibold text-gray-900 hover:text-orange-600 transition-colors"
+              className="font-semibold text-gray-900 hover:text-emerald-700 transition-colors"
             >
               {profile.display_name}
             </Link>
@@ -143,7 +143,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
         </div>
 
         {/* Entry header */}
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-fade-in">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-fade-in">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
@@ -151,7 +151,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
                   {entry.restaurant_name}
                 </h1>
                 {subtypeName && (
-                  <span className="flex-shrink-0 text-xs bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full font-medium">
+                  <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
                     {subtypeName}
                   </span>
                 )}
@@ -160,7 +160,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
                 href={generateMapsLink(entry.restaurant_name, entry.city)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-gray-500 hover:text-orange-500 transition-colors text-sm"
+                className="flex items-center gap-1.5 text-gray-500 hover:text-emerald-600 transition-colors text-sm"
               >
                 <MapPin size={14} />
                 {entry.city}
@@ -168,7 +168,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
             </div>
 
             {entry.composite_score && (
-              <div className="flex items-center gap-1 bg-orange-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0">
+              <div className="flex items-center gap-1 bg-emerald-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0">
                 <Star size={16} className="fill-white" />
                 {Number(entry.composite_score).toFixed(1)}
               </div>
@@ -200,7 +200,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
                           size={14}
                           className={
                             star <= r.score
-                              ? "fill-orange-400 text-orange-400"
+                              ? "fill-amber-400 text-amber-400"
                               : "fill-none text-gray-200"
                           }
                         />
@@ -218,11 +218,11 @@ export default async function PublicEntryPage({ params }: PageProps) {
 
         {/* Details row */}
         {(entry.cost || entry.quantity) && (
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
             <div className="flex gap-6">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                  <Calendar size={15} className="text-orange-500" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                  <Calendar size={15} className="text-emerald-600" />
                 </div>
                 <div>
                   <div className="text-xs text-gray-400">Date</div>
@@ -238,8 +238,8 @@ export default async function PublicEntryPage({ params }: PageProps) {
 
               {entry.cost && (
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <DollarSign size={15} className="text-orange-500" />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <DollarSign size={15} className="text-emerald-600" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-400">Cost</div>
@@ -252,8 +252,8 @@ export default async function PublicEntryPage({ params }: PageProps) {
 
               {entry.quantity && (
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <Hash size={15} className="text-orange-500" />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <Hash size={15} className="text-emerald-600" />
                   </div>
                   <div>
                     <div className="text-xs text-gray-400">Qty</div>
@@ -269,7 +269,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
 
         {/* Notes */}
         {entry.notes && (
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+          <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
             <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Notes
             </h3>
@@ -281,13 +281,13 @@ export default async function PublicEntryPage({ params }: PageProps) {
 
         {/* CTA for non-users */}
         {!currentUser && (
-          <div className="bg-orange-50 rounded-2xl p-5 text-center animate-slide-up">
+          <div className="bg-emerald-50 rounded-2xl p-5 text-center animate-slide-up">
             <p className="text-sm text-gray-600 mb-3">
               Track and rate your own favorite foods
             </p>
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors text-sm"
+              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-colors text-sm"
             >
               Join Chompion — it&apos;s free
             </Link>

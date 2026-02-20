@@ -19,7 +19,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50/60 to-stone-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -43,7 +43,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                 placeholder="you@example.com"
               />
             </div>
@@ -61,7 +61,7 @@ export default function LoginPage() {
                 type="password"
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-gray-900 placeholder-gray-400"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                 placeholder="Your password"
               />
             </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
             >
               {loading ? "Logging in..." : "Log In"}
             </button>
@@ -85,7 +85,7 @@ export default function LoginPage() {
             Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              className="text-orange-500 hover:text-orange-600 font-medium"
+              className="text-emerald-600 hover:text-emerald-700 font-medium"
             >
               Sign up
             </Link>

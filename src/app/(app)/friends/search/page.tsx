@@ -126,20 +126,20 @@ export default function FriendsSearchPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search users..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
           />
         </div>
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium rounded-xl transition-colors text-sm"
+          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium rounded-xl transition-colors text-sm"
         >
           {loading ? "..." : "Search"}
         </button>
       </form>
 
       {searched && results.length === 0 && !loading && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-8 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-8 text-center">
           <p className="text-gray-500">
             No users found for &ldquo;{query}&rdquo;
           </p>
@@ -156,18 +156,18 @@ export default function FriendsSearchPage() {
             return (
               <div
                 key={user.id}
-                className="bg-white rounded-xl border border-orange-100 p-4 flex items-center gap-3"
+                className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3"
               >
                 <Link
                   href={`/u/${user.username}`}
-                  className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-lg flex-shrink-0 hover:ring-2 hover:ring-orange-300 transition-all"
+                  className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-lg flex-shrink-0 hover:ring-2 hover:ring-emerald-300 transition-all"
                 >
                   {emoji}
                 </Link>
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/u/${user.username}`}
-                    className="text-sm font-semibold text-gray-900 hover:text-orange-600 transition-colors"
+                    className="text-sm font-semibold text-gray-900 hover:text-emerald-700 transition-colors"
                   >
                     {user.display_name}
                   </Link>

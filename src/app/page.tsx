@@ -13,7 +13,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50/60 to-stone-50 px-4">
       <div className="text-center max-w-lg">
         <h1 className="text-6xl font-bold text-gray-900 mb-4">
           Chompion
@@ -24,7 +24,7 @@ export default async function Home() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/signup"
-            className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-xl transition-colors text-center"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-8 rounded-xl transition-colors text-center"
           >
             Get Started
           </Link>

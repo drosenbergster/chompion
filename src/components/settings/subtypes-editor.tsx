@@ -103,10 +103,10 @@ export function SubtypesEditor({
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5">
+    <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Tag size={18} className="text-orange-500" />
+          <Tag size={18} className="text-emerald-600" />
           <h2 className="text-lg font-semibold text-gray-900">
             Types / Variants
           </h2>
@@ -145,7 +145,7 @@ export function SubtypesEditor({
                         setEditName("");
                       }
                     }}
-                    className="flex-1 px-3 py-2 rounded-xl border border-orange-300 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm text-gray-900"
+                    className="flex-1 px-3 py-2 rounded-xl border border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm text-gray-900"
                     autoFocus
                   />
                   <button
@@ -174,7 +174,7 @@ export function SubtypesEditor({
                       setEditingId(subtype.id);
                       setEditName(subtype.name);
                     }}
-                    className="p-2 text-gray-300 hover:text-orange-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-2 text-gray-300 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <Pencil size={14} />
                   </button>
@@ -201,12 +201,12 @@ export function SubtypesEditor({
             if (e.key === "Enter") handleAdd();
           }}
           placeholder="Add new type..."
-          className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
+          className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-sm text-gray-900 placeholder-gray-400"
         />
         <button
           onClick={handleAdd}
           disabled={adding || !newName.trim()}
-          className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2 px-4 rounded-xl transition-colors text-sm"
+          className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium py-2 px-4 rounded-xl transition-colors text-sm"
         >
           <Plus size={15} />
           {adding ? "Adding..." : "Add"}
