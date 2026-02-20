@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Star, MapPin, UtensilsCrossed } from "lucide-react";
-import { ProfileRadarChart } from "@/components/profile/profile-radar-chart";
+import { BehavioralRadarChart } from "@/components/profile/behavioral-radar-chart";
 import { FollowButton } from "@/components/profile/follow-button";
 
 import { FOOD_EMOJIS } from "@/lib/constants";
@@ -66,28 +66,47 @@ export default async function PublicProfilePage({
     .sort((a, b) => Number(b.composite_score) - Number(a.composite_score))
     .slice(0, 3);
 
-  // Compute radar data from all entry_ratings
-  const categoryScores: Record<string, { total: number; count: number; name: string }> = {};
-  (entries ?? []).forEach((entry) => {
-    const ratings = entry.entry_ratings as unknown as {
-      score: number;
-      rating_category_id: string;
-      rating_categories: { name: string };
-    }[];
-    if (!Array.isArray(ratings)) return;
-    ratings.forEach((r) => {
-      const catName = r.rating_categories?.name ?? r.rating_category_id;
-      if (!categoryScores[catName]) {
-        categoryScores[catName] = { total: 0, count: 0, name: catName };
-      }
-      categoryScores[catName].total += r.score;
-      categoryScores[catName].count += 1;
-    });
+  // Compute behavioral radar
+  const allEntries = entries ?? [];
+  const scoredEntries = allEntries.filter((e) => e.composite_score);
+
+  const uniqueRestaurantCount = new Set(allEntries.map((e) => e.restaurant_name)).size;
+  const adventurous = entryCount > 0 ? (uniqueRestaurantCount / entryCount) * 5 : 0;
+
+  const entriesWithSubtype = allEntries.filter(
+    (e) =>
+      e.subtypes &&
+      typeof e.subtypes === "object" &&
+      "name" in (e.subtypes as unknown as Record<string, unknown>)
+  );
+  const uniqueSubtypes = new Set(
+    entriesWithSubtype.map((e) => (e.subtypes as unknown as { name: string }).name)
+  ).size;
+  const diversePalate = entriesWithSubtype.length > 0
+    ? (uniqueSubtypes / entriesWithSubtype.length) * 5
+    : null;
+
+  let discerning = 0;
+  if (scoredEntries.length >= 2) {
+    const scores = scoredEntries.map((e) => Number(e.composite_score));
+    const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const variance = scores.reduce((sum, s) => sum + (s - mean) ** 2, 0) / scores.length;
+    discerning = Math.min(Math.sqrt(variance) / 1.2, 1) * 5;
+  }
+
+  const restaurantVisits: Record<string, number> = {};
+  allEntries.forEach((e) => {
+    restaurantVisits[e.restaurant_name] = (restaurantVisits[e.restaurant_name] ?? 0) + 1;
   });
-  const radarData = Object.values(categoryScores).map((c) => ({
-    category: c.name,
-    score: Math.round((c.total / c.count) * 10) / 10,
-  }));
+  const maxVisits = Math.max(0, ...Object.values(restaurantVisits));
+  const loyal = entryCount > 0 ? (maxVisits / entryCount) * 5 : 0;
+
+  const behavioralRadar = {
+    adventurous: Number(Math.min(adventurous, 5).toFixed(1)),
+    diversePalate: diversePalate !== null ? Number(Math.min(diversePalate, 5).toFixed(1)) : null,
+    discerning: Number(Math.min(discerning, 5).toFixed(1)),
+    loyal: Number(Math.min(loyal, 5).toFixed(1)),
+  };
 
   // Check if current user follows this profile
   let isFollowing = false;
@@ -180,14 +199,16 @@ export default async function PublicProfilePage({
           />
         </div>
 
-        {/* Radar chart */}
-        {radarData.length >= 3 && (
+        {/* Behavioral Radar */}
+        {entryCount >= 5 && (
           <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
-            <h3 className="font-semibold text-gray-900 mb-1">Taste Profile</h3>
+            <h3 className="font-semibold text-gray-900 mb-1">
+              {defaultFood?.name ?? "Food"} Personality
+            </h3>
             <p className="text-xs text-gray-400 mb-2">
-              Average scores across rating categories
+              What {profile.display_name}&apos;s eating habits reveal
             </p>
-            <ProfileRadarChart data={radarData} />
+            <BehavioralRadarChart radar={behavioralRadar} />
           </div>
         )}
 

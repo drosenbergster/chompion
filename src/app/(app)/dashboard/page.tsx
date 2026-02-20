@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Plus, Star, MapPin, TrendingUp, Flame, BarChart3, ChevronRight } from "lucide-react";
+import { Plus, Star, MapPin, TrendingUp, Flame, ChevronRight } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
-import { RatingTrendChart } from "@/components/dashboard/rating-trend-chart";
 import { WelcomeTutorial } from "@/components/tutorial/welcome-tutorial";
 import { FOOD_EMOJIS } from "@/lib/constants";
 
@@ -121,22 +120,6 @@ export default async function DashboardPage({
 
   const recentEntries = (entries ?? []).slice(0, 5);
 
-  const ratingTrendData = [...(entries ?? [])]
-    .filter((e) => e.composite_score)
-    .sort(
-      (a, b) =>
-        new Date(a.eaten_at).getTime() - new Date(b.eaten_at).getTime()
-    )
-    .slice(-20)
-    .map((e) => ({
-      date: e.eaten_at,
-      label: new Date(e.eaten_at).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      score: Number(e.composite_score),
-    }));
-
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
@@ -234,26 +217,6 @@ export default async function DashboardPage({
         </Link>
       )}
 
-      {/* Rating Trend mini-chart */}
-      {ratingTrendData.length >= 2 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp size={18} className="text-orange-500" />
-              <h3 className="font-semibold text-gray-900">Rating Trend</h3>
-            </div>
-            <Link
-              href="/insights"
-              className="text-sm text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1"
-            >
-              <BarChart3 size={14} />
-              All Insights
-            </Link>
-          </div>
-          <RatingTrendChart data={ratingTrendData} />
-        </div>
-      )}
-
       {/* Top Rated */}
       {topRated.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-5 animate-slide-up">
@@ -293,9 +256,31 @@ export default async function DashboardPage({
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-lg flex-shrink-0">
-                    <Star size={11} className="fill-white" />
-                    {Number(entry.composite_score).toFixed(1)}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-px">
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const score = Number(entry.composite_score);
+                        const filled = score >= star;
+                        const half =
+                          !filled && score >= star - 0.5;
+                        return (
+                          <Star
+                            key={star}
+                            size={12}
+                            className={
+                              filled
+                                ? "text-orange-400 fill-orange-400"
+                                : half
+                                  ? "text-orange-400 fill-orange-200"
+                                  : "text-gray-200 fill-gray-100"
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="text-xs font-bold text-orange-600 tabular-nums">
+                      {Number(entry.composite_score).toFixed(1)}
+                    </span>
                   </div>
                 </Link>
               );

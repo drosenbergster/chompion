@@ -33,7 +33,10 @@ export const FOOD_EMOJIS: Record<string, string> = {
 };
 
 export const DEFAULT_RATING_CATEGORIES = [
-  { name: "Taste", weight: 0.34 },
-  { name: "Value", weight: 0.33 },
-  { name: "Presentation", weight: 0.33 },
+  { name: "Taste", weight: 0.2 },
+  { name: "Quality", weight: 0.2 },
+  { name: "Ambiance", weight: 0.2 },
+  { name: "Presentation", weight: 0.2 },
+  { name: "Value", weight: 0.2 },
 ] as const;
+

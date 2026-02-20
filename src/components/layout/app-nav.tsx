@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Home, UtensilsCrossed, BarChart3, Settings, Plus } from "lucide-react";
+import { LogOut, Home, UtensilsCrossed, BarChart3, Users, Settings, Plus } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/supabase/types";
@@ -16,8 +16,11 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/entries", label: "Chomps", icon: UtensilsCrossed },
   { href: "/insights", label: "Insights", icon: BarChart3 },
+  { href: "/friends", label: "Friends", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
+
+const mobileNavItems = navItems.filter((i) => i.href !== "/friends");
 
 export function AppNav({ profile }: AppNavProps) {
   const pathname = usePathname();
@@ -102,7 +105,7 @@ export function AppNav({ profile }: AppNavProps) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-orange-100 z-50 safe-area-pb">
         <div className="flex items-center justify-around h-16 relative">
           {/* Left nav items */}
-          {navItems.slice(0, 2).map((item) => {
+          {mobileNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (
@@ -136,7 +139,7 @@ export function AppNav({ profile }: AppNavProps) {
           </Link>
 
           {/* Right nav items */}
-          {navItems.slice(2).map((item) => {
+          {mobileNavItems.slice(2).map((item) => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);
             return (

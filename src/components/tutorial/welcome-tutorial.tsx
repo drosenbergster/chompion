@@ -334,8 +334,8 @@ function StepRankings() {
         Make Rankings Yours
       </h2>
       <p className="text-gray-500 text-sm leading-relaxed">
-        We set up default rating categories&mdash;Taste, Value, and
-        Presentation. You can customize these anytime in Settings.
+        We set up five rating categories&mdash;Taste, Quality, Ambiance,
+        Presentation, and Value. You can customize these anytime in Settings.
       </p>
     </div>
   );
