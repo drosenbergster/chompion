@@ -10,6 +10,20 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      if (next === "/dashboard") {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { count } = await supabase
+            .from("passion_foods")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id);
+          if (count === 0) {
+            return NextResponse.redirect(`${origin}/onboarding`);
+          }
+        }
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

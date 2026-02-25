@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signup } from "../actions";
+import { GoogleButton } from "@/components/auth/google-button";
 
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +32,17 @@ export default function SignupPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
+          <GoogleButton mode="signup" />
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-3 text-gray-400">or</span>
+            </div>
+          </div>
+
           <form action={handleSubmit} className="space-y-5">
             <div>
               <label

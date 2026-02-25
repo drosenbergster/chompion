@@ -5,6 +5,8 @@ import { MapPin, Star, Plus, ChevronRight } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { EntryFilters } from "@/components/entries/entry-filters";
 import { FOOD_EMOJIS } from "@/lib/constants";
+import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
+import { getFoodTheme } from "@/lib/themes";
 
 export default async function EntriesPage({
   searchParams,
@@ -123,8 +125,10 @@ export default async function EntriesPage({
           ? "Chomp updated!"
           : null;
 
+  const theme = getFoodTheme(passionFood.theme_key);
+
   return (
-    <div className="pb-20 md:pb-8">
+    <FoodThemeProvider themeKey={passionFood.theme_key} className="pb-20 md:pb-8">
       {successMessage && <SuccessToast message={successMessage} />}
 
       <div className="flex items-center justify-between mb-4">
@@ -153,9 +157,14 @@ export default async function EntriesPage({
               href={`/entries?food=${food.id}`}
               className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
                 food.id === passionFood.id
-                  ? "bg-emerald-600 text-white shadow-md"
+                  ? "text-white shadow-md"
                   : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
               }`}
+              style={
+                food.id === passionFood.id
+                  ? { backgroundColor: "var(--food-primary)" }
+                  : undefined
+              }
             >
               {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
             </Link>
@@ -202,16 +211,22 @@ export default async function EntriesPage({
               <Link
                 key={entry.id}
                 href={`/entries/${entry.id}`}
-                className="block bg-white rounded-2xl shadow-sm border border-emerald-100 p-4 hover:border-emerald-300 hover:shadow-md transition-all group"
+                className="block bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
+                      <h3 className="font-semibold text-gray-900 truncate group-hover:opacity-70 transition-opacity">
                         {entry.restaurant_name}
                       </h3>
                       {subtypeName && (
-                        <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                        <span
+                          className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium"
+                          style={{
+                            backgroundColor: theme.tint,
+                            color: theme.primary,
+                          }}
+                        >
                           {subtypeName}
                         </span>
                       )}
@@ -246,16 +261,18 @@ export default async function EntriesPage({
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {/* Composite score badge */}
                     {entry.composite_score && (
-                      <div className="flex items-center gap-0.5 bg-emerald-600 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
+                      <div
+                        className="flex items-center gap-0.5 text-white text-sm font-bold px-2.5 py-1 rounded-xl"
+                        style={{ backgroundColor: theme.primary }}
+                      >
                         <Star size={13} className="fill-white" />
                         {Number(entry.composite_score).toFixed(1)}
                       </div>
                     )}
                     <ChevronRight
                       size={16}
-                      className="text-gray-300 group-hover:text-emerald-500 transition-colors"
+                      className="text-gray-300 group-hover:text-gray-400 transition-colors"
                     />
                   </div>
                 </div>
@@ -264,6 +281,6 @@ export default async function EntriesPage({
           })}
         </div>
       )}
-    </div>
+    </FoodThemeProvider>
   );
 }

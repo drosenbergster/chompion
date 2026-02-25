@@ -5,6 +5,7 @@ import { Plus, Star, MapPin, TrendingUp, Flame, ChevronRight } from "lucide-reac
 import { SuccessToast } from "@/components/ui/success-toast";
 import { WelcomeTutorial } from "@/components/tutorial/welcome-tutorial";
 import { FOOD_EMOJIS } from "@/lib/constants";
+import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
 
 function getWeekKey(date: Date): string {
   const d = new Date(date);
@@ -120,6 +121,52 @@ export default async function DashboardPage({
 
   const recentEntries = (entries ?? []).slice(0, 5);
 
+  const totalSpent = (entries ?? []).reduce(
+    (sum, e) => sum + (e.cost ? Number(e.cost) : 0),
+    0
+  );
+  const uniqueCities = new Set((entries ?? []).map((e) => e.city)).size;
+  const uniqueRestaurants = new Set(
+    (entries ?? []).map((e) => e.restaurant_name)
+  ).size;
+
+  const foodNameLower = defaultFood.name.toLowerCase();
+
+  function pickHeadline(): string {
+    if (entryCount === 0) return `Your ${foodNameLower} journey starts now.`;
+
+    const options: string[] = [];
+
+    if (streak >= 3)
+      options.push(`${streak}-week streak. Absolute machine.`);
+    if (entryCount >= 10)
+      options.push(`${entryCount} ${foodNameLower} and counting.`);
+    if (totalSpent >= 100)
+      options.push(
+        `$${Math.round(totalSpent).toLocaleString()} spent on ${foodNameLower}. Worth every cent.`
+      );
+    if (mostVisited && mostVisited[1] >= 3)
+      options.push(
+        `${mostVisited[0]} — ${mostVisited[1]} visits. You're a regular.`
+      );
+    if (uniqueRestaurants >= 5 && mostVisited)
+      options.push(
+        `${uniqueRestaurants} spots tried. But you keep going back to ${mostVisited[0]}.`
+      );
+    if (uniqueCities >= 3)
+      options.push(
+        `${entryCount} ${foodNameLower} across ${uniqueCities} cities.`
+      );
+
+    if (options.length === 0)
+      return `${entryCount} ${foodNameLower} logged. The journey continues.`;
+
+    const dayIndex = new Date().getDate() % options.length;
+    return options[dayIndex];
+  }
+
+  const headline = pickHeadline();
+
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
@@ -128,7 +175,7 @@ export default async function DashboardPage({
         : null;
 
   return (
-    <div className="space-y-6 pb-20 md:pb-8">
+    <FoodThemeProvider themeKey={defaultFood.theme_key} className="space-y-6 pb-20 md:pb-8">
       {successMessage && <SuccessToast message={successMessage} />}
 
       {/* Food tabs */}
@@ -139,9 +186,14 @@ export default async function DashboardPage({
             href={`/dashboard?food=${food.id}`}
             className={`flex-shrink-0 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-colors ${
               food.id === defaultFood.id
-                ? "bg-emerald-600 text-white shadow-md"
+                ? "text-white shadow-md"
                 : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
             }`}
+            style={
+              food.id === defaultFood.id
+                ? { backgroundColor: "var(--food-primary)" }
+                : undefined
+            }
           >
             {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
           </Link>
@@ -154,28 +206,47 @@ export default async function DashboardPage({
         </Link>
       </div>
 
-      {/* Stats grid */}
-      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-fade-in">
-        <h2 className="text-2xl font-bold text-gray-900 mb-1">
-          {foodEmoji} {defaultFood.name}
-        </h2>
-        <p className="text-gray-500 text-sm mb-5">Your chomp stats</p>
+      {/* Hero headline + stats */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">
+        <div className="mb-5">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+            {foodEmoji} {headline}
+          </h2>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-stagger">
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-emerald-700">
+          <div
+            className="rounded-xl p-4 text-center"
+            style={{ backgroundColor: "var(--food-tint)" }}
+          >
+            <div
+              className="text-3xl font-bold"
+              style={{ color: "var(--food-primary)" }}
+            >
               {entryCount}
             </div>
             <div className="text-xs text-gray-500 mt-1">Total Chomps</div>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-emerald-700">
+          <div
+            className="rounded-xl p-4 text-center"
+            style={{ backgroundColor: "var(--food-tint)" }}
+          >
+            <div
+              className="text-3xl font-bold"
+              style={{ color: "var(--food-primary)" }}
+            >
               {avgRating ? avgRating.toFixed(1) : "--"}
             </div>
             <div className="text-xs text-gray-500 mt-1">Avg Rating</div>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
-            <div className="text-3xl font-bold text-emerald-700 flex items-center justify-center gap-1">
+          <div
+            className="rounded-xl p-4 text-center"
+            style={{ backgroundColor: "var(--food-tint)" }}
+          >
+            <div
+              className="text-3xl font-bold flex items-center justify-center gap-1"
+              style={{ color: "var(--food-primary)" }}
+            >
               {streak > 0 && <Flame size={20} className="text-amber-500" />}
               {streak > 0 ? streak : "--"}
             </div>
@@ -183,9 +254,13 @@ export default async function DashboardPage({
               Week Streak
             </div>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
+          <div
+            className="rounded-xl p-4 text-center"
+            style={{ backgroundColor: "var(--food-tint)" }}
+          >
             <div
-              className="text-lg font-bold text-emerald-700 truncate leading-tight mt-1"
+              className="text-lg font-bold truncate leading-tight mt-1"
+              style={{ color: "var(--food-primary)" }}
               title={mostVisited?.[0]}
             >
               {mostVisited ? mostVisited[0] : "--"}
@@ -200,14 +275,18 @@ export default async function DashboardPage({
       {entryCount === 0 && (
         <Link
           href="/entries/new"
-          className="flex items-center gap-4 bg-emerald-50 hover:bg-emerald-100 rounded-2xl p-4 transition-colors group animate-fade-in"
+          className="flex items-center gap-4 rounded-2xl p-4 transition-colors group animate-fade-in hover:opacity-80"
+          style={{ backgroundColor: "var(--food-tint)" }}
         >
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform"
+            style={{ backgroundColor: "var(--food-primary)" }}
+          >
             <Plus size={18} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900">
-              Ready to log your first {defaultFood.name.toLowerCase()}?
+              Ready to log your first {foodNameLower}?
             </p>
             <p className="text-xs text-gray-500">
               Tap here to get your stats rolling
@@ -219,9 +298,9 @@ export default async function DashboardPage({
 
       {/* Top Rated */}
       {topRated.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-slide-up">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp size={18} className="text-emerald-600" />
+            <TrendingUp size={18} style={{ color: "var(--food-primary)" }} />
             <h3 className="font-semibold text-gray-900">Top Rated</h3>
           </div>
           <div className="space-y-3">
@@ -239,18 +318,24 @@ export default async function DashboardPage({
                   href={`/entries/${entry.id}`}
                   className="flex items-center gap-3 group"
                 >
-                  <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700 flex-shrink-0">
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                    style={{
+                      backgroundColor: "var(--food-tint)",
+                      color: "var(--food-primary)",
+                    }}
+                  >
                     {i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
+                    <div className="font-medium text-gray-900 truncate group-hover:opacity-70 transition-opacity">
                       {entry.restaurant_name}
                     </div>
                     <div className="text-xs text-gray-400 flex items-center gap-1">
                       <MapPin size={10} />
                       {entry.city}
                       {subtypeName && (
-                        <span className="text-emerald-500 ml-1">
+                        <span style={{ color: "var(--food-primary-light)" }} className="ml-1">
                           &middot; {subtypeName}
                         </span>
                       )}
@@ -278,7 +363,10 @@ export default async function DashboardPage({
                         );
                       })}
                     </div>
-                    <span className="text-xs font-bold text-emerald-700 tabular-nums">
+                    <span
+                      className="text-xs font-bold tabular-nums"
+                      style={{ color: "var(--food-primary)" }}
+                    >
                       {Number(entry.composite_score).toFixed(1)}
                     </span>
                   </div>
@@ -291,12 +379,13 @@ export default async function DashboardPage({
 
       {/* Recent Entries */}
       {recentEntries.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-slide-up">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-slide-up">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Recent Chomps</h3>
             <Link
               href="/entries"
-              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+              className="text-sm font-medium"
+              style={{ color: "var(--food-primary)" }}
             >
               View All
             </Link>
@@ -309,7 +398,7 @@ export default async function DashboardPage({
                 className="flex items-center justify-between group"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate group-hover:text-emerald-700 transition-colors">
+                  <div className="font-medium text-gray-900 truncate group-hover:opacity-70 transition-opacity">
                     {entry.restaurant_name}
                   </div>
                   <div className="text-xs text-gray-400">
@@ -323,7 +412,10 @@ export default async function DashboardPage({
                   </div>
                 </div>
                 {entry.composite_score && (
-                  <div className="text-sm font-semibold text-emerald-700 flex-shrink-0">
+                  <div
+                    className="text-sm font-semibold flex-shrink-0"
+                    style={{ color: "var(--food-primary)" }}
+                  >
                     {Number(entry.composite_score).toFixed(1)}
                   </div>
                 )}
@@ -332,6 +424,6 @@ export default async function DashboardPage({
           </div>
         </div>
       )}
-    </div>
+    </FoodThemeProvider>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { login } from "../actions";
+import { GoogleButton } from "@/components/auth/google-button";
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,17 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8">
+          <GoogleButton mode="login" />
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-white px-3 text-gray-400">or</span>
+            </div>
+          </div>
+
           <form action={handleSubmit} className="space-y-5">
             <div>
               <label
@@ -49,12 +61,20 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"

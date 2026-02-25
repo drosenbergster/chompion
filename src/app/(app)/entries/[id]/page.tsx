@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MapPin, Star, ArrowLeft, Pencil, Calendar, DollarSign, Hash, RotateCcw } from "lucide-react";
 import { generateMapsLink } from "@/lib/utils";
 import { DeleteEntryButton } from "@/components/entries/delete-entry-button";
+import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
 
 export default async function EntryDetailPage({
   params,
@@ -40,6 +41,14 @@ export default async function EntryDetailPage({
     notFound();
   }
 
+  const { data: passionFood } = await supabase
+    .from("passion_foods")
+    .select("theme_key")
+    .eq("id", entry.passion_food_id)
+    .single();
+
+  const themeKey = passionFood?.theme_key ?? "generic";
+
   const subtypeName =
     entry.subtypes && typeof entry.subtypes === "object" && "name" in entry.subtypes
       ? (entry.subtypes as { name: string }).name
@@ -54,7 +63,7 @@ export default async function EntryDetailPage({
   ).sort((a, b) => a.rating_categories.name.localeCompare(b.rating_categories.name));
 
   return (
-    <div className="pb-20 md:pb-8">
+    <FoodThemeProvider themeKey={themeKey} className="pb-20 md:pb-8">
       {/* Back button */}
       <Link
         href="/entries"
@@ -72,7 +81,13 @@ export default async function EntryDetailPage({
               {entry.restaurant_name}
             </h1>
             {subtypeName && (
-              <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
+              <span
+                className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full font-medium"
+                style={{
+                  backgroundColor: "var(--food-tint)",
+                  color: "var(--food-primary)",
+                }}
+              >
                 {subtypeName}
               </span>
             )}
@@ -83,7 +98,7 @@ export default async function EntryDetailPage({
               href={generateMapsLink(entry.restaurant_name, entry.city)}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-emerald-600 transition-colors"
+              className="hover:opacity-70 transition-opacity"
             >
               {entry.city}
             </a>
@@ -91,7 +106,10 @@ export default async function EntryDetailPage({
         </div>
 
         {entry.composite_score && (
-          <div className="flex items-center gap-1 bg-emerald-600 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0">
+          <div
+            className="flex items-center gap-1 text-white font-bold px-3.5 py-1.5 rounded-xl text-lg flex-shrink-0"
+            style={{ backgroundColor: "var(--food-primary)" }}
+          >
             <Star size={16} className="fill-white" />
             {Number(entry.composite_score).toFixed(1)}
           </div>
@@ -99,7 +117,7 @@ export default async function EntryDetailPage({
       </div>
 
       {/* Rating breakdown */}
-      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
           Rating Breakdown
         </h3>
@@ -136,14 +154,17 @@ export default async function EntryDetailPage({
       </div>
 
       {/* Details */}
-      <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
           Details
         </h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-              <Calendar size={15} className="text-emerald-600" />
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "var(--food-tint)" }}
+            >
+              <Calendar size={15} style={{ color: "var(--food-primary)" }} />
             </div>
             <div>
               <div className="text-xs text-gray-400">Date</div>
@@ -159,8 +180,11 @@ export default async function EntryDetailPage({
 
           {entry.cost && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <DollarSign size={15} className="text-emerald-600" />
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: "var(--food-tint)" }}
+              >
+                <DollarSign size={15} style={{ color: "var(--food-primary)" }} />
               </div>
               <div>
                 <div className="text-xs text-gray-400">Cost</div>
@@ -173,8 +197,11 @@ export default async function EntryDetailPage({
 
           {entry.quantity && (
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <Hash size={15} className="text-emerald-600" />
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: "var(--food-tint)" }}
+              >
+                <Hash size={15} style={{ color: "var(--food-primary)" }} />
               </div>
               <div>
                 <div className="text-xs text-gray-400">Quantity</div>
@@ -189,7 +216,7 @@ export default async function EntryDetailPage({
 
       {/* Location details */}
       {(entry.address || entry.phone_number || entry.location_notes) && (
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Location Info
           </h3>
@@ -223,7 +250,7 @@ export default async function EntryDetailPage({
 
       {/* Notes */}
       {entry.notes && (
-        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 mb-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Notes
           </h3>
@@ -251,6 +278,6 @@ export default async function EntryDetailPage({
         </Link>
         <DeleteEntryButton entryId={entry.id} />
       </div>
-    </div>
+    </FoodThemeProvider>
   );
 }

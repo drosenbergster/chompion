@@ -4,6 +4,8 @@ import { InsightsCharts } from "@/components/insights/insights-charts";
 import Link from "next/link";
 import { Plus, BarChart3 } from "lucide-react";
 import { FOOD_EMOJIS } from "@/lib/constants";
+import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
+import { getFoodTheme } from "@/lib/themes";
 
 export default async function InsightsPage({
   searchParams,
@@ -253,8 +255,19 @@ export default async function InsightsPage({
     loyal: Number(Math.min(loyal, 5).toFixed(1)),
   };
 
+  // Price vs Quality scatter data
+  const priceVsQuality = allEntries
+    .filter((e) => e.cost && e.composite_score)
+    .map((e) => ({
+      name: e.restaurant_name,
+      cost: Number(e.cost),
+      rating: Number(e.composite_score),
+    }));
+
+  const theme = getFoodTheme(passionFood.theme_key);
+
   return (
-    <div className="pb-20 md:pb-8">
+    <FoodThemeProvider themeKey={passionFood.theme_key} className="pb-20 md:pb-8">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Insights</h1>
@@ -272,9 +285,14 @@ export default async function InsightsPage({
               href={`/insights?food=${food.id}`}
               className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
                 food.id === passionFood.id
-                  ? "bg-emerald-600 text-white shadow-md"
+                  ? "text-white shadow-md"
                   : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
               }`}
+              style={
+                food.id === passionFood.id
+                  ? { backgroundColor: "var(--food-primary)" }
+                  : undefined
+              }
             >
               {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
             </Link>
@@ -291,9 +309,13 @@ export default async function InsightsPage({
         entriesWithCost={entriesWithCost}
         behavioralRadar={behavioralRadar}
         categoryAverages={categoryAverages}
+        priceVsQuality={priceVsQuality}
         foodName={passionFood.name}
         entryCount={entryCount}
+        themeColors={theme.chart}
+        themePrimary={theme.primary}
+        themeTint={theme.tint}
       />
-    </div>
+    </FoodThemeProvider>
   );
 }

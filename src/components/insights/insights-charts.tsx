@@ -12,6 +12,9 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ScatterChart,
+  Scatter,
+  ZAxis,
 } from "recharts";
 import {
   DollarSign,
@@ -21,20 +24,9 @@ import {
 } from "lucide-react";
 import { BehavioralRadarChart } from "@/components/profile/behavioral-radar-chart";
 
-const COLORS = [
-  "#059669",
-  "#10b981",
-  "#34d399",
-  "#6ee7b7",
-  "#a7f3d0",
-  "#047857",
-  "#065f46",
-  "#064e3b",
-];
-
 const TOOLTIP_STYLE = {
   borderRadius: 12,
-  border: "1px solid #a7f3d0",
+  border: "1px solid #e5e7eb",
   boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
   fontSize: 13,
 };
@@ -62,8 +54,12 @@ interface InsightsChartsProps {
     loyal: number;
   };
   categoryAverages: { name: string; avg: number }[];
+  priceVsQuality: { name: string; cost: number; rating: number }[];
   foodName: string;
   entryCount: number;
+  themeColors: string[];
+  themePrimary: string;
+  themeTint: string;
 }
 
 function ChartCard({
@@ -101,8 +97,12 @@ export function InsightsCharts({
   entriesWithCost,
   behavioralRadar,
   categoryAverages,
+  priceVsQuality,
   foodName,
   entryCount,
+  themeColors,
+  themePrimary,
+  themeTint,
 }: InsightsChartsProps) {
   const hasSubtypes =
     orderBreakdown.length > 0 &&
@@ -115,52 +115,28 @@ export function InsightsCharts({
     <div className="space-y-6 animate-stagger">
       {/* Summary Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <Hash size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {summaryStats.totalEntries}
+        {[
+          { icon: Hash, value: String(summaryStats.totalEntries), label: "Total Chomps" },
+          { icon: DollarSign, value: summaryStats.totalSpent > 0 ? `$${summaryStats.totalSpent.toFixed(0)}` : "--", label: "Total Spent" },
+          { icon: UtensilsCrossed, value: String(summaryStats.uniqueRestaurants), label: "Restaurants" },
+          { icon: MapPin, value: String(summaryStats.citiesVisited), label: "Cities" },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div key={stat.label} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: themeTint }}
+              >
+                <Icon size={16} style={{ color: themePrimary }} />
+              </div>
+              <div>
+                <div className="text-lg font-bold text-gray-900">{stat.value}</div>
+                <div className="text-[11px] text-gray-400">{stat.label}</div>
+              </div>
             </div>
-            <div className="text-[11px] text-gray-400">Total Chomps</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <DollarSign size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {summaryStats.totalSpent > 0
-                ? `$${summaryStats.totalSpent.toFixed(0)}`
-                : "--"}
-            </div>
-            <div className="text-[11px] text-gray-400">Total Spent</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <UtensilsCrossed size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {summaryStats.uniqueRestaurants}
-            </div>
-            <div className="text-[11px] text-gray-400">Restaurants</div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-emerald-100 p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-            <MapPin size={16} className="text-emerald-600" />
-          </div>
-          <div>
-            <div className="text-lg font-bold text-gray-900">
-              {summaryStats.citiesVisited}
-            </div>
-            <div className="text-[11px] text-gray-400">Cities</div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* Behavioral Radar - Food Personality */}
@@ -225,7 +201,7 @@ export function InsightsCharts({
                 />
                 <Bar
                   dataKey="avgRating"
-                  fill="#059669"
+                  fill={themePrimary}
                   radius={[0, 6, 6, 0]}
                   barSize={18}
                 />
@@ -277,7 +253,7 @@ export function InsightsCharts({
                   />
                   <Bar
                     dataKey="count"
-                    fill="#059669"
+                    fill={themePrimary}
                     radius={[6, 6, 0, 0]}
                     barSize={28}
                   />
@@ -309,7 +285,7 @@ export function InsightsCharts({
                     nameKey="name"
                   >
                     {orderBreakdown.map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      <Cell key={i} fill={themeColors[i % themeColors.length]} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -373,7 +349,7 @@ export function InsightsCharts({
                   />
                   <Bar
                     dataKey="total"
-                    fill="#059669"
+                    fill={themePrimary}
                     radius={[6, 6, 0, 0]}
                     barSize={28}
                   />
@@ -398,8 +374,11 @@ export function InsightsCharts({
                   <div className="flex items-center gap-2">
                     <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-emerald-500 rounded-full"
-                        style={{ width: `${(cat.avg / 5) * 100}%` }}
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${(cat.avg / 5) * 100}%`,
+                          backgroundColor: themePrimary,
+                        }}
                       />
                     </div>
                     <span className="text-sm font-semibold text-gray-900 w-8 text-right tabular-nums">
@@ -412,6 +391,80 @@ export function InsightsCharts({
           </ChartCard>
         )}
       </div>
+
+      {/* Price vs Quality */}
+      <ChartCard
+        title="Price vs Quality"
+        subtitle={`Are expensive ${foodName.toLowerCase()} spots actually better?`}
+      >
+        {priceVsQuality.length >= 3 ? (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <ScatterChart margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis
+                  type="number"
+                  dataKey="cost"
+                  name="Cost"
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `$${v}`}
+                  label={{
+                    value: "Cost ($)",
+                    position: "insideBottom",
+                    offset: -2,
+                    fontSize: 11,
+                    fill: "#9ca3af",
+                  }}
+                />
+                <YAxis
+                  type="number"
+                  dataKey="rating"
+                  name="Rating"
+                  domain={[0, 5]}
+                  tick={{ fontSize: 11, fill: "#9ca3af" }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={30}
+                  label={{
+                    value: "Rating",
+                    angle: -90,
+                    position: "insideLeft",
+                    offset: 10,
+                    fontSize: 11,
+                    fill: "#9ca3af",
+                  }}
+                />
+                <ZAxis range={[48, 48]} />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  formatter={(value: number, name: string) => [
+                    name === "Cost" ? `$${value.toFixed(2)}` : `${value.toFixed(1)} / 5.0`,
+                    name,
+                  ]}
+                  labelFormatter={(_, payload) => {
+                    const item = payload?.[0]?.payload as
+                      | { name: string }
+                      | undefined;
+                    return item?.name ?? "";
+                  }}
+                />
+                <Scatter
+                  data={priceVsQuality}
+                  fill={themePrimary}
+                  fillOpacity={0.7}
+                  strokeWidth={0}
+                />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <ChartNudge
+            message={`Track cost on at least 3 entries to see how price relates to quality`}
+          />
+        )}
+      </ChartCard>
     </div>
   );
 }

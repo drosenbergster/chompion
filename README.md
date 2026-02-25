@@ -1,10 +1,10 @@
 # Chompion
 
-Track, rate, and rank your favorite eats. Declare your passion food — pizza, tacos, coffee, whatever — then log every experience with customizable ratings, discover patterns in your taste, and share your profile with friends.
+Track, rate, and rank your favorite eats. Pick your food obsession — pizza, tacos, coffee, whatever — then log every chomp with customizable ratings, discover patterns in your taste, and share your profile with friends.
 
 ## Features
 
-- **Passion Foods** — track one or many food obsessions, each with their own stats
+- **Food Lists** — track one or many food obsessions, each with their own stats
 - **Customizable Ratings** — weighted categories (Taste, Value, Presentation, etc.) that you define
 - **Entry Logging** — restaurant, city, cost, subtypes, notes, and per-category ratings
 - **Dashboard** — stats summary, top rated spots, weekly streak, recent chomps
@@ -87,7 +87,6 @@ src/
 
 Items identified for future implementation:
 
-- **Loading states:** Add `loading.tsx` skeleton screens for dashboard, entries, insights, and friends routes
-- **Mobile nav:** Friends page is not accessible from the mobile bottom nav (desktop only via sidebar)
 - **Performance:** Pre-compute insights aggregations at scale (database-level materialized views or cached stats)
-- **Passion food switcher:** Dashboard and insights currently only show the default food; add a switcher for users with multiple lists
+- **Dynamic food theming:** Per-food color palettes, SVG doodle patterns, and visual personality (PRD Section 7)
+- **Additional visualizations:** Rating distribution histogram and location-based analysis
