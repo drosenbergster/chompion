@@ -6,6 +6,7 @@ import { LogOut, Home, UtensilsCrossed, BarChart3, Users, Settings, Plus } from 
 import { logout } from "@/app/(auth)/actions";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/supabase/types";
+import { NotificationBell } from "./notification-bell";
 
 interface AppNavProps {
   user: { id: string; email: string };
@@ -23,7 +24,7 @@ const navItems = [
 const mobileLeftItems = navItems.slice(0, 2);
 const mobileRightItems = navItems.slice(2);
 
-export function AppNav({ profile }: AppNavProps) {
+export function AppNav({ user, profile }: AppNavProps) {
   const pathname = usePathname();
   const isOnNewEntry = pathname === "/entries/new";
 
@@ -60,7 +61,7 @@ export function AppNav({ profile }: AppNavProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href="/entries/new"
               className={cn(
@@ -73,6 +74,8 @@ export function AppNav({ profile }: AppNavProps) {
               <Plus size={18} strokeWidth={2.5} />
               Log Chomp
             </Link>
+
+            <NotificationBell userId={user.id} />
 
             <div className="hidden md:flex items-center gap-3">
               <span className="text-sm text-gray-600">

@@ -206,6 +206,35 @@ export interface Database {
           created_at?: string;
         };
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          actor_id: string;
+          data: Record<string, unknown>;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          actor_id: string;
+          data?: Record<string, unknown>;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          actor_id?: string;
+          data?: Record<string, unknown>;
+          read?: boolean;
+          created_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -221,6 +250,7 @@ export type RatingCategory = Database["public"]["Tables"]["rating_categories"]["
 export type Entry = Database["public"]["Tables"]["entries"]["Row"];
 export type EntryRating = Database["public"]["Tables"]["entry_ratings"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 // Entry with joined data for display
 export type EntryWithDetails = Entry & {

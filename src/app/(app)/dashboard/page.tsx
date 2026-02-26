@@ -1,7 +1,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Plus, Star, MapPin, TrendingUp, Flame, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Star,
+  MapPin,
+  TrendingUp,
+  Flame,
+  ChevronRight,
+  Lightbulb,
+  Compass,
+  DollarSign,
+  TrendingDown,
+  Repeat,
+} from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { WelcomeTutorial } from "@/components/tutorial/welcome-tutorial";
 import { FOOD_EMOJIS } from "@/lib/constants";
@@ -17,12 +29,10 @@ function getWeekKey(date: Date): string {
 
 function calculateStreak(dates: Date[]): number {
   if (dates.length === 0) return 0;
-
   const weekSet = new Set(dates.map((d) => getWeekKey(d)));
   const now = new Date();
   let streak = 0;
   const checkDate = new Date(now);
-
   while (true) {
     const weekKey = getWeekKey(checkDate);
     if (weekSet.has(weekKey)) {
@@ -33,6 +43,11 @@ function calculateStreak(dates: Date[]): number {
     }
   }
   return streak;
+}
+
+interface Insight {
+  icon: React.ReactNode;
+  text: string;
 }
 
 export default async function DashboardPage({
@@ -91,14 +106,14 @@ export default async function DashboardPage({
     .order("eaten_at", { ascending: false });
 
   const entryCount = entries?.length ?? 0;
+  const ratedEntries = (entries ?? []).filter((e) => e.composite_score);
 
   const avgRating =
-    entryCount > 0
-      ? (entries ?? []).reduce(
-          (sum, e) =>
-            sum + (e.composite_score ? Number(e.composite_score) : 0),
+    ratedEntries.length > 0
+      ? ratedEntries.reduce(
+          (sum, e) => sum + Number(e.composite_score),
           0
-        ) / (entries ?? []).filter((e) => e.composite_score).length
+        ) / ratedEntries.length
       : null;
 
   const streak = calculateStreak(
@@ -132,11 +147,10 @@ export default async function DashboardPage({
 
   const foodNameLower = defaultFood.name.toLowerCase();
 
+  // --- Headline ---
   function pickHeadline(): string {
     if (entryCount === 0) return `Your ${foodNameLower} journey starts now.`;
-
     const options: string[] = [];
-
     if (streak >= 3)
       options.push(`${streak}-week streak. Absolute machine.`);
     if (entryCount >= 10)
@@ -157,25 +171,137 @@ export default async function DashboardPage({
       options.push(
         `${entryCount} ${foodNameLower} across ${uniqueCities} cities.`
       );
-
     if (options.length === 0)
       return `${entryCount} ${foodNameLower} logged. The journey continues.`;
-
     const dayIndex = new Date().getDate() % options.length;
     return options[dayIndex];
   }
 
+  // --- Insight spotlights ---
+  function buildInsights(): Insight[] {
+    const all: Insight[] = [];
+
+    // Best value: highest score / lowest cost
+    const withCostAndRating = (entries ?? []).filter(
+      (e) => e.cost && Number(e.cost) > 0 && e.composite_score
+    );
+    if (withCostAndRating.length >= 2) {
+      const best = [...withCostAndRating].sort(
+        (a, b) =>
+          Number(b.composite_score) / Number(b.cost) -
+          Number(a.composite_score) / Number(a.cost)
+      )[0];
+      all.push({
+        icon: <DollarSign size={14} />,
+        text: `Best value: ${best.restaurant_name} — ${Number(best.composite_score).toFixed(1)} for $${Number(best.cost).toFixed(0)}`,
+      });
+    }
+
+    // Rating trend: last 5 vs previous 5
+    if (ratedEntries.length >= 6) {
+      const recent5 = ratedEntries.slice(0, 5);
+      const prev5 = ratedEntries.slice(5, 10);
+      const recentAvg =
+        recent5.reduce((s, e) => s + Number(e.composite_score), 0) /
+        recent5.length;
+      const prevAvg =
+        prev5.reduce((s, e) => s + Number(e.composite_score), 0) /
+        prev5.length;
+      const diff = recentAvg - prevAvg;
+      if (Math.abs(diff) >= 0.1) {
+        const direction = diff > 0 ? "up" : "down";
+        const Icon = diff > 0 ? TrendingUp : TrendingDown;
+        all.push({
+          icon: <Icon size={14} />,
+          text: `Ratings trending ${direction}: ${diff > 0 ? "+" : ""}${diff.toFixed(1)} over your last 5`,
+        });
+      }
+    }
+
+    // Discovery rate: new restaurants this month vs last
+    const now = new Date();
+    const thisMonth = (entries ?? []).filter((e) => {
+      const d = new Date(e.eaten_at);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const thisMonthNewSpots = new Set(thisMonth.map((e) => e.restaurant_name));
+    if (thisMonthNewSpots.size >= 2) {
+      all.push({
+        icon: <Compass size={14} />,
+        text: `${thisMonthNewSpots.size} spots visited this month`,
+      });
+    }
+
+    // Go-to pattern: most common subtype at most visited spot
+    if (mostVisited && mostVisited[1] >= 2) {
+      const atFav = (entries ?? []).filter(
+        (e) => e.restaurant_name === mostVisited[0]
+      );
+      const subtypeCounts: Record<string, number> = {};
+      atFav.forEach((e) => {
+        const sn =
+          e.subtypes &&
+          typeof e.subtypes === "object" &&
+          "name" in e.subtypes
+            ? (e.subtypes as { name: string }).name
+            : null;
+        if (sn) subtypeCounts[sn] = (subtypeCounts[sn] ?? 0) + 1;
+      });
+      const topSubtype = Object.entries(subtypeCounts).sort(
+        (a, b) => b[1] - a[1]
+      )[0];
+      if (topSubtype) {
+        all.push({
+          icon: <Repeat size={14} />,
+          text: `Your go-to: ${mostVisited[0]} ${topSubtype[0].toLowerCase()} (${mostVisited[1]} visits)`,
+        });
+      }
+    }
+
+    // Most adventurous city
+    if (uniqueCities >= 2) {
+      const cityRestaurants: Record<string, Set<string>> = {};
+      (entries ?? []).forEach((e) => {
+        if (!cityRestaurants[e.city]) cityRestaurants[e.city] = new Set();
+        cityRestaurants[e.city].add(e.restaurant_name);
+      });
+      const topCity = Object.entries(cityRestaurants).sort(
+        (a, b) => b[1].size - a[1].size
+      )[0];
+      if (topCity[1].size >= 2) {
+        all.push({
+          icon: <Compass size={14} />,
+          text: `Most explored: ${topCity[0]} (${topCity[1].size} unique spots)`,
+        });
+      }
+    }
+
+    return all;
+  }
+
   const headline = pickHeadline();
+  const insights = buildInsights();
+  const dayIndex = new Date().getDate();
+  const visibleInsights = insights.length <= 2
+    ? insights
+    : [
+        insights[dayIndex % insights.length],
+        insights[(dayIndex + 1) % insights.length],
+      ].filter(
+        (v, i, a) => a.indexOf(v) === i
+      );
 
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
       : params.success === "updated"
         ? "Chomp updated!"
-        : null;
+        : params.success === "welcome"
+          ? "Welcome to Chompion!"
+          : null;
 
   return (
-    <FoodThemeProvider themeKey={defaultFood.theme_key} className="space-y-6 pb-20 md:pb-8">
+    <FoodThemeProvider themeKey={defaultFood.theme_key} className="space-y-5 pb-20 md:pb-8">
       {successMessage && <SuccessToast message={successMessage} />}
 
       {/* Food tabs */}
@@ -206,71 +332,72 @@ export default async function DashboardPage({
         </Link>
       </div>
 
-      {/* Hero headline + stats */}
+      {/* Hero headline + stat pills */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">
-        <div className="mb-5">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-            {foodEmoji} {headline}
-          </h2>
-        </div>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-3">
+          {foodEmoji} {headline}
+        </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-stagger">
-          <div
-            className="rounded-xl p-4 text-center"
-            style={{ backgroundColor: "var(--food-tint)" }}
-          >
-            <div
-              className="text-3xl font-bold"
-              style={{ color: "var(--food-primary)" }}
+        {entryCount > 0 && (
+          <div className="flex flex-wrap gap-2">
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+              style={{ backgroundColor: "var(--food-tint)", color: "var(--food-primary)" }}
             >
-              {entryCount}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Total Chomps</div>
-          </div>
-          <div
-            className="rounded-xl p-4 text-center"
-            style={{ backgroundColor: "var(--food-tint)" }}
-          >
-            <div
-              className="text-3xl font-bold"
-              style={{ color: "var(--food-primary)" }}
+              {entryCount} chomps
+            </span>
+            {avgRating && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: "var(--food-tint)", color: "var(--food-primary)" }}
+              >
+                <Star size={10} className="fill-current" />
+                {avgRating.toFixed(1)} avg
+              </span>
+            )}
+            {streak > 0 && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: "var(--food-tint)", color: "var(--food-primary)" }}
+              >
+                <Flame size={10} className="text-amber-500" />
+                {streak}wk streak
+              </span>
+            )}
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+              style={{ backgroundColor: "var(--food-tint)", color: "var(--food-primary)" }}
             >
-              {avgRating ? avgRating.toFixed(1) : "--"}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Avg Rating</div>
+              <MapPin size={10} />
+              {uniqueRestaurants} spots
+            </span>
+            {totalSpent > 0 && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: "var(--food-tint)", color: "var(--food-primary)" }}
+              >
+                ${Math.round(totalSpent)} spent
+              </span>
+            )}
           </div>
-          <div
-            className="rounded-xl p-4 text-center"
-            style={{ backgroundColor: "var(--food-tint)" }}
-          >
-            <div
-              className="text-3xl font-bold flex items-center justify-center gap-1"
-              style={{ color: "var(--food-primary)" }}
-            >
-              {streak > 0 && <Flame size={20} className="text-amber-500" />}
-              {streak > 0 ? streak : "--"}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Week Streak
-            </div>
-          </div>
-          <div
-            className="rounded-xl p-4 text-center"
-            style={{ backgroundColor: "var(--food-tint)" }}
-          >
-            <div
-              className="text-lg font-bold truncate leading-tight mt-1"
-              style={{ color: "var(--food-primary)" }}
-              title={mostVisited?.[0]}
-            >
-              {mostVisited ? mostVisited[0] : "--"}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {mostVisited ? `${mostVisited[1]}x` : "Most Visited"}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
+
+      {/* Insight spotlights */}
+      {visibleInsights.length > 0 && (
+        <div className="space-y-2 animate-fade-in">
+          {visibleInsights.map((insight, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3"
+              style={{ borderLeftWidth: 3, borderLeftColor: "var(--food-primary)" }}
+            >
+              <span style={{ color: "var(--food-primary)" }}>{insight.icon}</span>
+              <span className="text-sm text-gray-700">{insight.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {entryCount === 0 && (
         <Link
@@ -346,8 +473,7 @@ export default async function DashboardPage({
                       {[1, 2, 3, 4, 5].map((star) => {
                         const score = Number(entry.composite_score);
                         const filled = score >= star;
-                        const half =
-                          !filled && score >= star - 0.5;
+                        const half = !filled && score >= star - 0.5;
                         return (
                           <Star
                             key={star}
