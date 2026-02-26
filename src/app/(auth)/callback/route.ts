@@ -16,9 +16,10 @@ export async function GET(request: Request) {
         } = await supabase.auth.getUser();
         if (user) {
           const { count } = await supabase
-            .from("passion_foods")
+            .from("rating_categories")
             .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id);
+            .eq("user_id", user.id)
+            .is("passion_food_id", null);
           if (count === 0) {
             return NextResponse.redirect(`${origin}/onboarding`);
           }

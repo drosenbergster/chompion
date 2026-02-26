@@ -14,7 +14,7 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
 
   const currentSort = searchParams.get("sort") ?? "date";
   const currentCity = searchParams.get("city") ?? "";
-  const currentOrder = searchParams.get("order") ?? "";
+  const currentCuisine = searchParams.get("cuisine") ?? "";
 
   function updateParams(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -70,11 +70,11 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
 
       {orders.length > 1 && (
         <select
-          value={currentOrder}
-          onChange={(e) => updateParams("order", e.target.value)}
+          value={currentCuisine}
+          onChange={(e) => updateParams("cuisine", e.target.value)}
           className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 bg-white focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100 outline-none"
         >
-          <option value="">All orders</option>
+          <option value="">All cuisines</option>
           {orders.map((o) => (
             <option key={o} value={o}>
               {o}
@@ -83,9 +83,16 @@ export function EntryFilters({ cities, orders }: EntryFiltersProps) {
         </select>
       )}
 
-      {(currentCity || currentOrder || currentSort !== "date") && (
+      {(currentCity || currentCuisine || currentSort !== "date") && (
         <button
-          onClick={() => router.push("/entries")}
+          onClick={() => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("sort");
+            params.delete("city");
+            params.delete("cuisine");
+            const food = params.get("food");
+            router.push(`/entries${food ? `?food=${food}` : ""}`);
+          }}
           className="px-3 py-1.5 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
         >
           Reset

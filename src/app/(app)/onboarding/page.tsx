@@ -8,14 +8,14 @@ export default async function OnboardingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
+  if (!user) redirect("/login");
 
+  // Check if user has already set up rating categories (sign of completed onboarding)
   const { count } = await supabase
-    .from("passion_foods")
+    .from("rating_categories")
     .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .is("passion_food_id", null);
 
   if (count && count > 0) {
     redirect("/dashboard");

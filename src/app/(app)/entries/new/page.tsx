@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EntryForm } from "@/components/entries/entry-form";
-import type { Entry } from "@/lib/supabase/types";
+import type { Entry, EntryDish } from "@/lib/supabase/types";
+import { DEFAULT_RATING_CATEGORIES } from "@/lib/constants";
 
 export default async function NewEntryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; collection?: string }>;
 }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -22,19 +23,51 @@ export default async function NewEntryPage({
     .eq("id", user.id)
     .single();
 
-  // Get user's passion foods
   const { data: passionFoods } = await supabase
     .from("passion_foods")
     .select("*")
     .eq("user_id", user.id)
     .order("is_default", { ascending: false });
 
-  if (!passionFoods || passionFoods.length === 0) {
-    redirect("/dashboard");
+  // Get or create universal rating categories for this user
+  let { data: ratingCategories } = await supabase
+    .from("rating_categories")
+    .select("*")
+    .eq("user_id", user.id)
+    .is("passion_food_id", null)
+    .order("sort_order");
+
+  if (!ratingCategories || ratingCategories.length === 0) {
+    // Double-check to avoid race condition creating duplicates
+    const { count } = await supabase
+      .from("rating_categories")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .is("passion_food_id", null);
+
+    if (!count || count === 0) {
+      const cats = DEFAULT_RATING_CATEGORIES.map((cat, i) => ({
+        user_id: user.id,
+        passion_food_id: null,
+        name: cat.name,
+        weight: cat.weight,
+        sort_order: i,
+      }));
+      await supabase.from("rating_categories").insert(cats);
+    }
+
+    const { data: refetched } = await supabase
+      .from("rating_categories")
+      .select("*")
+      .eq("user_id", user.id)
+      .is("passion_food_id", null)
+      .order("sort_order");
+    ratingCategories = refetched ?? [];
   }
 
-  // If "from" param is set, pre-fill from a previous entry
+  // Prefill from previous entry
   let prefillEntry: Entry | undefined;
+  let prefillDishes: EntryDish[] | undefined;
   if (params.from) {
     const { data } = await supabase
       .from("entries")
@@ -44,28 +77,36 @@ export default async function NewEntryPage({
       .single();
     if (data) {
       prefillEntry = data as Entry;
+      const { data: dishes } = await supabase
+        .from("entry_dishes")
+        .select("*")
+        .eq("entry_id", data.id)
+        .order("sort_order");
+      prefillDishes = (dishes ?? []) as EntryDish[];
     }
   }
 
-  const activeFood = prefillEntry
-    ? passionFoods.find((f) => f.id === prefillEntry.passion_food_id) ??
-      passionFoods.find((f) => f.is_default) ??
-      passionFoods[0]
-    : passionFoods.find((f) => f.is_default) ?? passionFoods[0];
+  // Get previous cities and dish names for autocomplete
+  const { data: prevEntries } = await supabase
+    .from("entries")
+    .select("city")
+    .eq("user_id", user.id)
+    .order("eaten_at", { ascending: false });
 
-  // Get subtypes for active food
-  const { data: subtypes } = await supabase
-    .from("subtypes")
-    .select("*")
-    .eq("passion_food_id", activeFood.id)
-    .order("sort_order");
+  const previousCities = [
+    ...new Set((prevEntries ?? []).map((e) => e.city).filter(Boolean)),
+  ].sort();
 
-  // Get rating categories for active food
-  const { data: ratingCategories } = await supabase
-    .from("rating_categories")
-    .select("*")
-    .eq("passion_food_id", activeFood.id)
-    .order("sort_order");
+  const { data: prevDishes } = await supabase
+    .from("entry_dishes")
+    .select("name, entries!inner(user_id)")
+    .eq("entries.user_id", user.id);
+
+  const previousDishNames = [
+    ...new Set(
+      (prevDishes ?? []).map((d) => d.name).filter(Boolean)
+    ),
+  ].sort();
 
   return (
     <div className="pb-20 md:pb-8">
@@ -75,16 +116,18 @@ export default async function NewEntryPage({
       <p className="text-gray-500 text-sm mb-6">
         {prefillEntry
           ? `Back at ${prefillEntry.restaurant_name}? Rate it again.`
-          : `How was the ${activeFood.name.toLowerCase()}?`}
+          : "What did you eat?"}
       </p>
       <EntryForm
         userId={user.id}
         username={profile?.username}
-        passionFood={activeFood}
-        passionFoods={passionFoods}
-        subtypes={subtypes ?? []}
+        passionFoods={passionFoods ?? []}
         ratingCategories={ratingCategories ?? []}
         prefillEntry={prefillEntry}
+        prefillDishes={prefillDishes}
+        previousCities={previousCities}
+        previousDishNames={previousDishNames}
+        initialCollectionId={params.collection ?? null}
       />
     </div>
   );

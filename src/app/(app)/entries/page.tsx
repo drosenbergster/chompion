@@ -1,12 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { MapPin, Star, Plus, ChevronRight } from "lucide-react";
+import { MapPin, Star, Plus, ChevronRight, UtensilsCrossed } from "lucide-react";
 import { SuccessToast } from "@/components/ui/success-toast";
 import { EntryFilters } from "@/components/entries/entry-filters";
 import { FOOD_EMOJIS } from "@/lib/constants";
-import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
-import { getFoodTheme } from "@/lib/themes";
 
 export default async function EntriesPage({
   searchParams,
@@ -15,7 +13,7 @@ export default async function EntriesPage({
     success?: string;
     sort?: string;
     city?: string;
-    order?: string;
+    cuisine?: string;
     food?: string;
   }>;
 }) {
@@ -33,44 +31,25 @@ export default async function EntriesPage({
     .eq("user_id", user.id)
     .order("is_default", { ascending: false });
 
-  if (!passionFoods || passionFoods.length === 0) redirect("/dashboard");
-
-  const selectedFood = params.food
-    ? passionFoods.find((f) => f.id === params.food)
-    : undefined;
-  const passionFood =
-    selectedFood ?? passionFoods.find((f) => f.is_default) ?? passionFoods[0];
-
-  const { data: allEntries } = await supabase
+  // Build entry query -- optionally filtered by collection
+  let entryQuery = supabase
     .from("entries")
-    .select(
-      `
-      *,
-      subtypes ( name )
-    `
-    )
-    .eq("passion_food_id", passionFood.id)
+    .select(`*, entry_dishes ( name, rating, sort_order )`)
+    .eq("user_id", user.id)
     .order("eaten_at", { ascending: false });
+
+  if (params.food) {
+    entryQuery = entryQuery.eq("passion_food_id", params.food);
+  }
+
+  const { data: allEntries } = await entryQuery;
 
   const allCities = [
     ...new Set((allEntries ?? []).map((e) => e.city).filter(Boolean)),
   ].sort();
 
-  const allOrders = [
-    ...new Set(
-      (allEntries ?? [])
-        .map((e) => {
-          if (
-            e.subtypes &&
-            typeof e.subtypes === "object" &&
-            "name" in e.subtypes
-          ) {
-            return (e.subtypes as { name: string }).name;
-          }
-          return null;
-        })
-        .filter(Boolean) as string[]
-    ),
+  const allCuisines = [
+    ...new Set((allEntries ?? []).map((e) => e.cuisine).filter(Boolean) as string[]),
   ].sort();
 
   let entries = [...(allEntries ?? [])];
@@ -79,24 +58,14 @@ export default async function EntriesPage({
     entries = entries.filter((e) => e.city === params.city);
   }
 
-  if (params.order) {
-    entries = entries.filter((e) => {
-      if (
-        e.subtypes &&
-        typeof e.subtypes === "object" &&
-        "name" in e.subtypes
-      ) {
-        return (e.subtypes as { name: string }).name === params.order;
-      }
-      return false;
-    });
+  if (params.cuisine) {
+    entries = entries.filter((e) => e.cuisine === params.cuisine);
   }
 
   switch (params.sort) {
     case "rating":
       entries.sort(
-        (a, b) =>
-          Number(b.composite_score ?? 0) - Number(a.composite_score ?? 0)
+        (a, b) => Number(b.composite_score ?? 0) - Number(a.composite_score ?? 0)
       );
       break;
     case "cost":
@@ -104,8 +73,7 @@ export default async function EntriesPage({
       break;
     case "date-asc":
       entries.sort(
-        (a, b) =>
-          new Date(a.eaten_at).getTime() - new Date(b.eaten_at).getTime()
+        (a, b) => new Date(a.eaten_at).getTime() - new Date(b.eaten_at).getTime()
       );
       break;
     default:
@@ -116,6 +84,10 @@ export default async function EntriesPage({
   const filteredCount = entries.length;
   const isFiltered = totalCount !== filteredCount;
 
+  const selectedFood = params.food
+    ? (passionFoods ?? []).find((f) => f.id === params.food)
+    : null;
+
   const successMessage =
     params.success === "1"
       ? "Chomp logged!"
@@ -125,10 +97,8 @@ export default async function EntriesPage({
           ? "Chomp updated!"
           : null;
 
-  const theme = getFoodTheme(passionFood.theme_key);
-
   return (
-    <FoodThemeProvider themeKey={passionFood.theme_key} className="pb-20 md:pb-8">
+    <div className="pb-20 md:pb-8">
       {successMessage && <SuccessToast message={successMessage} />}
 
       <div className="flex items-center justify-between mb-4">
@@ -136,8 +106,8 @@ export default async function EntriesPage({
           <h1 className="text-2xl font-bold text-gray-900">Chomps</h1>
           <p className="text-sm text-gray-500">
             {isFiltered ? `${filteredCount} of ` : ""}
-            {totalCount} {passionFood.name.toLowerCase()}{" "}
-            {totalCount === 1 ? "chomp" : "chomps"}
+            {totalCount} {totalCount === 1 ? "chomp" : "chomps"}
+            {selectedFood ? ` in ${selectedFood.name}` : ""}
           </p>
         </div>
         <Link
@@ -149,22 +119,28 @@ export default async function EntriesPage({
         </Link>
       </div>
 
-      {passionFoods.length > 1 && (
+      {/* Collection filter tabs */}
+      {(passionFoods ?? []).length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-4">
-          {passionFoods.map((food) => (
+          <Link
+            href="/entries"
+            className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
+              !params.food
+                ? "bg-emerald-600 text-white shadow-md"
+                : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
+            }`}
+          >
+            All
+          </Link>
+          {(passionFoods ?? []).map((food) => (
             <Link
               key={food.id}
               href={`/entries?food=${food.id}`}
               className={`flex-shrink-0 px-4 py-2 rounded-2xl text-sm font-semibold transition-colors ${
-                food.id === passionFood.id
-                  ? "text-white shadow-md"
+                food.id === params.food
+                  ? "bg-emerald-600 text-white shadow-md"
                   : "bg-white text-gray-600 hover:bg-gray-50 border border-gray-200"
               }`}
-              style={
-                food.id === passionFood.id
-                  ? { backgroundColor: "var(--food-primary)" }
-                  : undefined
-              }
             >
               {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
             </Link>
@@ -174,18 +150,16 @@ export default async function EntriesPage({
 
       {totalCount > 0 && (
         <div className="mb-4">
-          <EntryFilters cities={allCities} orders={allOrders} />
+          <EntryFilters cities={allCities} orders={allCuisines} />
         </div>
       )}
 
       {entries.length === 0 && !isFiltered ? (
         <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-12 text-center animate-fade-in">
           <div className="text-6xl mb-4">🍽️</div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            No chomps yet!
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">No chomps yet!</h2>
           <p className="text-gray-500 mb-6">
-            Time to go eat some {passionFood.name.toLowerCase()} and tell us about it.
+            Time to go eat something and tell us about it.
           </p>
           <Link
             href="/entries/new"
@@ -202,10 +176,11 @@ export default async function EntriesPage({
       ) : (
         <div className="space-y-3">
           {entries.map((entry) => {
-            const subtypeName =
-              entry.subtypes && typeof entry.subtypes === "object" && "name" in entry.subtypes
-                ? (entry.subtypes as { name: string }).name
-                : null;
+            const entryDishes = Array.isArray(entry.entry_dishes)
+              ? (entry.entry_dishes as { name: string; rating: number | null; sort_order: number }[])
+                  .sort((a, b) => a.sort_order - b.sort_order)
+              : [];
+            const dishSummary = entryDishes.map((d) => d.name).join(", ");
 
             return (
               <Link
@@ -219,31 +194,26 @@ export default async function EntriesPage({
                       <h3 className="font-semibold text-gray-900 truncate group-hover:opacity-70 transition-opacity">
                         {entry.restaurant_name}
                       </h3>
-                      {subtypeName && (
-                        <span
-                          className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium"
-                          style={{
-                            backgroundColor: theme.tint,
-                            color: theme.primary,
-                          }}
-                        >
-                          {subtypeName}
+                      {entry.cuisine && (
+                        <span className="flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-500">
+                          {entry.cuisine}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
+                    {dishSummary && (
+                      <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-1">
+                        <UtensilsCrossed size={12} className="flex-shrink-0 text-gray-400" />
+                        <span className="truncate">{dishSummary}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1 text-sm text-gray-500 mb-1">
                       <MapPin size={13} className="flex-shrink-0" />
                       <span className="truncate">{entry.city}</span>
                     </div>
 
-                    {entry.notes && (
-                      <p className="text-sm text-gray-500 line-clamp-2">
-                        {entry.notes}
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span>
                         {new Date(entry.eaten_at).toLocaleDateString("en-US", {
                           month: "short",
@@ -251,21 +221,13 @@ export default async function EntriesPage({
                           year: "numeric",
                         })}
                       </span>
-                      {entry.cost && (
-                        <span>${Number(entry.cost).toFixed(2)}</span>
-                      )}
-                      {entry.quantity && entry.quantity > 1 && (
-                        <span>x{entry.quantity}</span>
-                      )}
+                      {entry.cost && <span>${Number(entry.cost).toFixed(2)}</span>}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {entry.composite_score && (
-                      <div
-                        className="flex items-center gap-0.5 text-white text-sm font-bold px-2.5 py-1 rounded-xl"
-                        style={{ backgroundColor: theme.primary }}
-                      >
+                      <div className="flex items-center gap-0.5 bg-emerald-600 text-white text-sm font-bold px-2.5 py-1 rounded-xl">
                         <Star size={13} className="fill-white" />
                         {Number(entry.composite_score).toFixed(1)}
                       </div>
@@ -281,6 +243,6 @@ export default async function EntriesPage({
           })}
         </div>
       )}
-    </FoodThemeProvider>
+    </div>
   );
 }

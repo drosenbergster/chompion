@@ -116,7 +116,7 @@ export interface Database {
       entries: {
         Row: {
           id: string;
-          passion_food_id: string;
+          passion_food_id: string | null;
           user_id: string;
           restaurant_name: string;
           city: string;
@@ -128,13 +128,14 @@ export interface Database {
           cost: number | null;
           composite_score: number | null;
           notes: string | null;
+          cuisine: string | null;
           eaten_at: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          passion_food_id: string;
+          passion_food_id?: string | null;
           user_id: string;
           restaurant_name: string;
           city: string;
@@ -146,13 +147,14 @@ export interface Database {
           cost?: number | null;
           composite_score?: number | null;
           notes?: string | null;
+          cuisine?: string | null;
           eaten_at?: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          passion_food_id?: string;
+          passion_food_id?: string | null;
           user_id?: string;
           restaurant_name?: string;
           city?: string;
@@ -164,9 +166,39 @@ export interface Database {
           cost?: number | null;
           composite_score?: number | null;
           notes?: string | null;
+          cuisine?: string | null;
           eaten_at?: string;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      entry_dishes: {
+        Row: {
+          id: string;
+          entry_id: string;
+          name: string;
+          rating: number | null;
+          notes: string | null;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          entry_id: string;
+          name: string;
+          rating?: number | null;
+          notes?: string | null;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          entry_id?: string;
+          name?: string;
+          rating?: number | null;
+          notes?: string | null;
+          sort_order?: number;
+          created_at?: string;
         };
       };
       entry_ratings: {
@@ -249,6 +281,7 @@ export type Subtype = Database["public"]["Tables"]["subtypes"]["Row"];
 export type RatingCategory = Database["public"]["Tables"]["rating_categories"]["Row"];
 export type Entry = Database["public"]["Tables"]["entries"]["Row"];
 export type EntryRating = Database["public"]["Tables"]["entry_ratings"]["Row"];
+export type EntryDish = Database["public"]["Tables"]["entry_dishes"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 

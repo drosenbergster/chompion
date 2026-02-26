@@ -1,7 +1,10 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { MapPin, Star, ArrowLeft, Pencil, Calendar, DollarSign, Hash, RotateCcw } from "lucide-react";
+import {
+  MapPin, Star, ArrowLeft, Pencil, Calendar, DollarSign, Hash,
+  RotateCcw, UtensilsCrossed,
+} from "lucide-react";
 import { generateMapsLink } from "@/lib/utils";
 import { DeleteEntryButton } from "@/components/entries/delete-entry-button";
 import { FoodThemeProvider } from "@/components/ui/food-theme-provider";
@@ -19,7 +22,6 @@ export default async function EntryDetailPage({
 
   if (!user) redirect("/login");
 
-  // Get the entry with all related data
   const { data: entry, error } = await supabase
     .from("entries")
     .select(
@@ -37,22 +39,24 @@ export default async function EntryDetailPage({
     .eq("user_id", user.id)
     .single();
 
-  if (error || !entry) {
-    notFound();
+  if (error || !entry) notFound();
+
+  // Get dishes for this entry
+  const { data: dishes } = await supabase
+    .from("entry_dishes")
+    .select("*")
+    .eq("entry_id", id)
+    .order("sort_order");
+
+  let themeKey = "generic";
+  if (entry.passion_food_id) {
+    const { data: passionFood } = await supabase
+      .from("passion_foods")
+      .select("theme_key")
+      .eq("id", entry.passion_food_id)
+      .single();
+    themeKey = passionFood?.theme_key ?? "generic";
   }
-
-  const { data: passionFood } = await supabase
-    .from("passion_foods")
-    .select("theme_key")
-    .eq("id", entry.passion_food_id)
-    .single();
-
-  const themeKey = passionFood?.theme_key ?? "generic";
-
-  const subtypeName =
-    entry.subtypes && typeof entry.subtypes === "object" && "name" in entry.subtypes
-      ? (entry.subtypes as { name: string }).name
-      : null;
 
   const ratings = (
     entry.entry_ratings as {
@@ -62,9 +66,10 @@ export default async function EntryDetailPage({
     }[]
   ).sort((a, b) => a.rating_categories.name.localeCompare(b.rating_categories.name));
 
+  const entryDishes = dishes ?? [];
+
   return (
     <FoodThemeProvider themeKey={themeKey} className="pb-20 md:pb-8">
-      {/* Back button */}
       <Link
         href="/entries"
         className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-emerald-600 transition-colors mb-4"
@@ -76,22 +81,9 @@ export default async function EntryDetailPage({
       {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-6">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-gray-900 truncate">
-              {entry.restaurant_name}
-            </h1>
-            {subtypeName && (
-              <span
-                className="flex-shrink-0 text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{
-                  backgroundColor: "var(--food-tint)",
-                  color: "var(--food-primary)",
-                }}
-              >
-                {subtypeName}
-              </span>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold text-gray-900 truncate mb-1">
+            {entry.restaurant_name}
+          </h1>
           <div className="flex items-center gap-1.5 text-gray-500">
             <MapPin size={14} />
             <a
@@ -103,6 +95,11 @@ export default async function EntryDetailPage({
               {entry.city}
             </a>
           </div>
+          {entry.cuisine && (
+            <span className="inline-block mt-1.5 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
+              {entry.cuisine}
+            </span>
+          )}
         </div>
 
         {entry.composite_score && (
@@ -116,42 +113,79 @@ export default async function EntryDetailPage({
         )}
       </div>
 
-      {/* Rating breakdown */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-          Rating Breakdown
-        </h3>
-        <div className="space-y-3">
-          {ratings.map((r) => (
-            <div key={r.id} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">
-                  {r.rating_categories.name}
-                </span>
-                <span className="text-xs text-gray-400">
-                  ({Math.round(Number(r.rating_categories.weight) * 100)}%)
-                </span>
+      {/* Dishes */}
+      {entryDishes.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <UtensilsCrossed size={14} />
+            Dishes
+          </h3>
+          <div className="space-y-2.5">
+            {entryDishes.map((dish) => (
+              <div key={dish.id} className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">{dish.name}</span>
+                {dish.rating && (
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        size={14}
+                        className={
+                          star <= Number(dish.rating)
+                            ? "fill-amber-400 text-amber-400"
+                            : "fill-none text-gray-200"
+                        }
+                      />
+                    ))}
+                    <span className="text-xs font-semibold text-gray-500 ml-1">
+                      {Number(dish.rating).toFixed(1)}
+                    </span>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    size={16}
-                    className={
-                      star <= r.score
-                        ? "fill-amber-400 text-amber-400"
-                        : "fill-none text-gray-200"
-                    }
-                  />
-                ))}
-                <span className="text-sm font-semibold text-gray-700 ml-1.5">
-                  {r.score}
-                </span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Rating breakdown */}
+      {ratings.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            Experience Rating
+          </h3>
+          <div className="space-y-3">
+            {ratings.map((r) => (
+              <div key={r.id} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {r.rating_categories.name}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    ({Math.round(Number(r.rating_categories.weight) * 100)}%)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      size={16}
+                      className={
+                        star <= r.score
+                          ? "fill-amber-400 text-amber-400"
+                          : "fill-none text-gray-200"
+                      }
+                    />
+                  ))}
+                  <span className="text-sm font-semibold text-gray-700 ml-1.5">
+                    {r.score}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Details */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
@@ -254,9 +288,7 @@ export default async function EntryDetailPage({
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Notes
           </h3>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {entry.notes}
-          </p>
+          <p className="text-gray-700 text-sm leading-relaxed">{entry.notes}</p>
         </div>
       )}
 

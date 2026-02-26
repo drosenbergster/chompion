@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Star, Trash2, Plus, X, Check } from "lucide-react";
+import { Star, Trash2, Plus, X, Check, Pencil } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { PassionFood } from "@/lib/supabase/types";
 
@@ -33,6 +33,8 @@ export function MyFoodsManager({
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
 
   async function handleAddFood() {
     const foodName = addingCustom ? customFood.trim() : selectedFood;
@@ -60,7 +62,7 @@ export function MyFoodsManager({
       .single();
 
     if (createError || !newFood) {
-      setError(createError?.message ?? "Failed to add list");
+      setError(createError?.message ?? "Failed to add collection");
       setLoading(false);
       return;
     }
@@ -83,6 +85,26 @@ export function MyFoodsManager({
     router.refresh();
   }
 
+  async function handleRename(foodId: string) {
+    if (!editName.trim()) return;
+
+    const supabase = createClient();
+    const { error: renameError } = await supabase
+      .from("passion_foods")
+      .update({ name: editName.trim() })
+      .eq("id", foodId);
+
+    if (renameError) {
+      setError(renameError.message);
+      return;
+    }
+
+    setFoods(foods.map((f) => (f.id === foodId ? { ...f, name: editName.trim() } : f)));
+    setEditingId(null);
+    setEditName("");
+    router.refresh();
+  }
+
   async function handleSetDefault(foodId: string) {
     const supabase = createClient();
 
@@ -96,9 +118,7 @@ export function MyFoodsManager({
       .update({ is_default: true })
       .eq("id", foodId);
 
-    setFoods(
-      foods.map((f) => ({ ...f, is_default: f.id === foodId }))
-    );
+    setFoods(foods.map((f) => ({ ...f, is_default: f.id === foodId })));
     router.refresh();
   }
 
@@ -115,24 +135,13 @@ export function MyFoodsManager({
       ).data?.map((e) => e.id) ?? [];
 
     if (entryIds.length > 0) {
-      await supabase
-        .from("entry_ratings")
-        .delete()
-        .in("entry_id", entryIds);
-      await supabase
-        .from("entries")
-        .delete()
-        .eq("passion_food_id", foodId);
+      await supabase.from("entry_dishes").delete().in("entry_id", entryIds);
+      await supabase.from("entry_ratings").delete().in("entry_id", entryIds);
+      await supabase.from("entries").delete().eq("passion_food_id", foodId);
     }
 
-    await supabase
-      .from("subtypes")
-      .delete()
-      .eq("passion_food_id", foodId);
-    await supabase
-      .from("rating_categories")
-      .delete()
-      .eq("passion_food_id", foodId);
+    await supabase.from("subtypes").delete().eq("passion_food_id", foodId);
+    await supabase.from("rating_categories").delete().eq("passion_food_id", foodId);
     await supabase.from("passion_foods").delete().eq("id", foodId);
 
     const remaining = foods.filter((f) => f.id !== foodId);
@@ -159,9 +168,9 @@ export function MyFoodsManager({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Lists</h1>
+          <h1 className="text-2xl font-bold text-gray-900">My Collections</h1>
           <p className="text-sm text-gray-500">
-            Manage your chomp tracking lists
+            Organize your chomps into collections
           </p>
         </div>
         <button
@@ -169,17 +178,21 @@ export function MyFoodsManager({
           className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm"
         >
           <Plus size={16} />
-          Add List
+          Add Collection
         </button>
       </div>
 
-      {/* Food cards */}
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3">{error}</div>
+      )}
+
       <div className="space-y-3">
         {foods.map((food) => {
           const emoji = FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic;
           const count = entryCounts[food.id] ?? 0;
           const isConfirming = confirmDeleteId === food.id;
           const isDeleting = deletingId === food.id;
+          const isEditing = editingId === food.id;
 
           return (
             <div
@@ -189,16 +202,60 @@ export function MyFoodsManager({
               <div className="flex items-center gap-4">
                 <div className="text-4xl flex-shrink-0">{emoji}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-gray-900 text-lg truncate">
-                      {food.name}
-                    </h3>
-                    {food.is_default && (
-                      <span className="flex-shrink-0 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                        Default
-                      </span>
-                    )}
-                  </div>
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRename(food.id);
+                          if (e.key === "Escape") {
+                            setEditingId(null);
+                            setEditName("");
+                          }
+                        }}
+                        className="flex-1 px-3 py-1.5 rounded-lg border border-emerald-300 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none text-gray-900 font-semibold"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => handleRename(food.id)}
+                        className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+                      >
+                        <Check size={14} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingId(null);
+                          setEditName("");
+                        }}
+                        className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900 text-lg truncate">
+                        {food.name}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setEditingId(food.id);
+                          setEditName(food.name);
+                        }}
+                        className="p-1 text-gray-300 hover:text-emerald-600 transition-colors"
+                        title="Rename"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      {food.is_default && (
+                        <span className="flex-shrink-0 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <p className="text-sm text-gray-500">
                     {count} {count === 1 ? "chomp" : "chomps"}
                   </p>
@@ -243,7 +300,7 @@ export function MyFoodsManager({
                     <button
                       onClick={() => setConfirmDeleteId(food.id)}
                       className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                      title="Delete food"
+                      title="Delete collection"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -261,7 +318,7 @@ export function MyFoodsManager({
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">
-                Add a New List
+                Add a Collection
               </h2>
               <button
                 onClick={() => {
@@ -317,7 +374,7 @@ export function MyFoodsManager({
                   type="text"
                   value={customFood}
                   onChange={(e) => setCustomFood(e.target.value)}
-                  placeholder="Enter a food to track..."
+                  placeholder="Enter a food category..."
                   autoFocus
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-400"
                   onKeyDown={(e) => {
@@ -330,12 +387,6 @@ export function MyFoodsManager({
               </div>
             )}
 
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3">
-                {error}
-              </div>
-            )}
-
             <button
               onClick={handleAddFood}
               disabled={
@@ -345,7 +396,7 @@ export function MyFoodsManager({
               }
               className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors"
             >
-              {loading ? "Adding..." : "Add List"}
+              {loading ? "Adding..." : "Add Collection"}
             </button>
           </div>
         </div>

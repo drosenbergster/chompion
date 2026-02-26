@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Star, MapPin, Users, UserPlus, Search } from "lucide-react";
-import { FOOD_EMOJIS } from "@/lib/constants";
+import { Star, MapPin, Users, UserPlus, Search, UtensilsCrossed } from "lucide-react";
 import { timeAgo } from "@/lib/utils";
 
 export default async function FriendsPage() {
@@ -75,35 +74,15 @@ export default async function FriendsPage() {
     .select("id, display_name, username, avatar_url")
     .in("id", followingIds);
 
-  const profileMap = new Map(
-    (profiles ?? []).map((p) => [p.id, p])
-  );
-
-  const { data: passionFoods } = await supabase
-    .from("passion_foods")
-    .select("id, user_id, name, theme_key, is_default")
-    .in("user_id", followingIds);
-
-  const foodMap = new Map(
-    (passionFoods ?? []).map((f) => [f.id, f])
-  );
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
   const { data: entries } = await supabase
     .from("entries")
-    .select(
-      `
-      id,
-      user_id,
-      passion_food_id,
-      restaurant_name,
-      city,
-      composite_score,
-      cost,
-      notes,
-      eaten_at,
-      subtypes ( name )
-    `
-    )
+    .select(`
+      id, user_id, passion_food_id, restaurant_name, city,
+      composite_score, cost, notes, eaten_at, cuisine,
+      entry_dishes ( name, rating, sort_order )
+    `)
     .in("user_id", followingIds)
     .order("eaten_at", { ascending: false })
     .limit(30);
@@ -144,17 +123,16 @@ export default async function FriendsPage() {
         <div className="space-y-2.5 animate-stagger">
           {feedEntries.map((entry) => {
             const profile = profileMap.get(entry.user_id);
-            const food = foodMap.get(entry.passion_food_id);
-            const subtypeName =
-              entry.subtypes &&
-              typeof entry.subtypes === "object" &&
-              "name" in entry.subtypes
-                ? (entry.subtypes as { name: string }).name
-                : null;
             const displayName = profile?.display_name ?? "Someone";
             const score = entry.composite_score
               ? Number(entry.composite_score).toFixed(1)
               : null;
+
+            const entryDishes = Array.isArray(entry.entry_dishes)
+              ? (entry.entry_dishes as { name: string; rating: number | null; sort_order: number }[])
+                  .sort((a, b) => a.sort_order - b.sort_order)
+              : [];
+            const dishNames = entryDishes.map((d) => d.name).join(", ");
 
             return (
               <Link
@@ -166,18 +144,13 @@ export default async function FriendsPage() {
                   <div className="text-sm text-gray-900 truncate">
                     <span className="font-semibold">{displayName}</span>
                     {" rated "}
-                    <span className="font-semibold">
-                      {entry.restaurant_name}
-                    </span>
+                    <span className="font-semibold">{entry.restaurant_name}</span>
                     {score && (
                       <>
                         {" "}
                         <span className="inline-flex items-center gap-0.5 text-emerald-600 font-bold">
                           {score}
-                          <Star
-                            size={11}
-                            className="fill-emerald-600 text-emerald-600 -mt-px"
-                          />
+                          <Star size={11} className="fill-emerald-600 text-emerald-600 -mt-px" />
                         </span>
                       </>
                     )}
@@ -190,15 +163,15 @@ export default async function FriendsPage() {
                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
                   <MapPin size={10} />
                   <span>{entry.city}</span>
-                  {subtypeName && (
-                    <span>&middot; {subtypeName}</span>
+                  {dishNames && (
+                    <>
+                      <span>&middot;</span>
+                      <UtensilsCrossed size={10} />
+                      <span className="truncate">{dishNames}</span>
+                    </>
                   )}
-                  {food && (
-                    <span>&middot; {food.name}</span>
-                  )}
-                  {entry.cost && (
-                    <span>&middot; ${Number(entry.cost).toFixed(0)}</span>
-                  )}
+                  {entry.cuisine && <span>&middot; {entry.cuisine}</span>}
+                  {entry.cost && <span>&middot; ${Number(entry.cost).toFixed(0)}</span>}
                 </div>
 
                 {entry.notes && (
