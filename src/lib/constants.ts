@@ -40,3 +40,90 @@ export const DEFAULT_RATING_CATEGORIES = [
   { name: "Value", weight: 0.2 },
 ] as const;
 
+export const FOOD_CATEGORY_PRESETS: Record<string, { name: string; weight: number }[]> = {
+  pizza: [
+    { name: "Taste", weight: 0.25 },
+    { name: "Crust", weight: 0.25 },
+    { name: "Toppings", weight: 0.2 },
+    { name: "Value", weight: 0.15 },
+    { name: "Ambiance", weight: 0.15 },
+  ],
+  burgers: [
+    { name: "Taste", weight: 0.25 },
+    { name: "Patty Quality", weight: 0.25 },
+    { name: "Toppings & Bun", weight: 0.2 },
+    { name: "Value", weight: 0.15 },
+    { name: "Ambiance", weight: 0.15 },
+  ],
+  coffee: [
+    { name: "Flavor", weight: 0.3 },
+    { name: "Body", weight: 0.2 },
+    { name: "Aroma", weight: 0.2 },
+    { name: "Presentation", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+  tacos: [
+    { name: "Taste", weight: 0.3 },
+    { name: "Filling", weight: 0.25 },
+    { name: "Tortilla", weight: 0.2 },
+    { name: "Salsa & Sides", weight: 0.1 },
+    { name: "Value", weight: 0.15 },
+  ],
+  sushi: [
+    { name: "Freshness", weight: 0.3 },
+    { name: "Taste", weight: 0.25 },
+    { name: "Presentation", weight: 0.2 },
+    { name: "Rice Quality", weight: 0.1 },
+    { name: "Value", weight: 0.15 },
+  ],
+  pasta: [
+    { name: "Taste", weight: 0.25 },
+    { name: "Sauce", weight: 0.25 },
+    { name: "Noodle Texture", weight: 0.2 },
+    { name: "Presentation", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+  ramen: [
+    { name: "Broth", weight: 0.3 },
+    { name: "Noodles", weight: 0.25 },
+    { name: "Toppings", weight: 0.2 },
+    { name: "Taste", weight: 0.15 },
+    { name: "Value", weight: 0.1 },
+  ],
+  wine: [
+    { name: "Flavor", weight: 0.3 },
+    { name: "Aroma", weight: 0.2 },
+    { name: "Balance", weight: 0.2 },
+    { name: "Finish", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+  icecream: [
+    { name: "Flavor", weight: 0.3 },
+    { name: "Texture", weight: 0.25 },
+    { name: "Quality", weight: 0.2 },
+    { name: "Presentation", weight: 0.1 },
+    { name: "Value", weight: 0.15 },
+  ],
+  sandwiches: [
+    { name: "Taste", weight: 0.25 },
+    { name: "Bread", weight: 0.2 },
+    { name: "Fillings", weight: 0.25 },
+    { name: "Freshness", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+  burritos: [
+    { name: "Taste", weight: 0.3 },
+    { name: "Filling", weight: 0.25 },
+    { name: "Tortilla", weight: 0.15 },
+    { name: "Portion Size", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+  cheese: [
+    { name: "Flavor", weight: 0.3 },
+    { name: "Texture", weight: 0.25 },
+    { name: "Aroma", weight: 0.15 },
+    { name: "Quality", weight: 0.15 },
+    { name: "Value", weight: 0.15 },
+  ],
+};
+

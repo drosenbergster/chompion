@@ -75,7 +75,31 @@ export default async function EditEntryPage({
     ratingCategories = refetched ?? [];
   }
 
-  // Get existing ratings and map old category IDs to universal ones by name
+  // Get per-food rating categories for all passion foods
+  const allFoodCategories: Record<string, typeof ratingCategories> = {};
+  if (passionFoods && passionFoods.length > 0) {
+    const foodIds = passionFoods.map((f) => f.id);
+    const { data: foodCats } = await supabase
+      .from("rating_categories")
+      .select("*")
+      .in("passion_food_id", foodIds)
+      .order("sort_order");
+
+    (foodCats ?? []).forEach((cat) => {
+      if (!cat.passion_food_id) return;
+      if (!allFoodCategories[cat.passion_food_id]) {
+        allFoodCategories[cat.passion_food_id] = [];
+      }
+      allFoodCategories[cat.passion_food_id]!.push(cat);
+    });
+  }
+
+  // Determine the active categories for this entry (per-food if available)
+  const activeCats = entry.passion_food_id && allFoodCategories[entry.passion_food_id]?.length
+    ? allFoodCategories[entry.passion_food_id]
+    : ratingCategories;
+
+  // Get existing ratings and map old category IDs to active ones by name
   const { data: rawRatings } = await supabase
     .from("entry_ratings")
     .select("rating_category_id, score, rating_categories ( name )")
@@ -89,7 +113,7 @@ export default async function EditEntryPage({
         ? (r.rating_categories as { name: string }).name
         : null;
     const matchedCat = ratingName
-      ? (ratingCategories ?? []).find((c) => c.name === ratingName)
+      ? (activeCats ?? []).find((c) => c.name === ratingName)
       : null;
     return {
       rating_category_id: matchedCat?.id ?? r.rating_category_id,
@@ -143,6 +167,7 @@ export default async function EditEntryPage({
         username={profile?.username}
         passionFoods={passionFoods ?? []}
         ratingCategories={ratingCategories ?? []}
+        allFoodCategories={allFoodCategories as Record<string, import("@/lib/supabase/types").RatingCategory[]>}
         existingEntry={entry}
         existingRatings={existingRatings ?? []}
         existingDishes={(existingDishes ?? []) as EntryDish[]}

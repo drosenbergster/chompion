@@ -7,7 +7,6 @@ interface Entry {
   composite_score: number | null;
   cost: number | null;
   eaten_at: string;
-  subtype_name: string | null;
 }
 
 function computeSummaryStats(entries: Entry[]) {
@@ -42,11 +41,11 @@ function computeTopRestaurants(entries: Entry[]) {
 }
 
 const ENTRIES: Entry[] = [
-  { id: "1", restaurant_name: "Blue Bottle", city: "SF", composite_score: 4.2, cost: 6.5, eaten_at: "2025-11-15", subtype_name: "Latte" },
-  { id: "2", restaurant_name: "Blue Bottle", city: "SF", composite_score: 4.5, cost: 5.5, eaten_at: "2025-12-02", subtype_name: "Espresso" },
-  { id: "3", restaurant_name: "Stumptown", city: "Portland", composite_score: 3.8, cost: 5.0, eaten_at: "2025-12-10", subtype_name: "Pour Over" },
-  { id: "4", restaurant_name: "Intelligentsia", city: "LA", composite_score: 4.7, cost: 7.0, eaten_at: "2026-01-05", subtype_name: "Latte" },
-  { id: "5", restaurant_name: "Verve", city: "Santa Cruz", composite_score: 4.3, cost: null, eaten_at: "2026-02-01", subtype_name: null },
+  { id: "1", restaurant_name: "Blue Bottle", city: "SF", composite_score: 4.2, cost: 6.5, eaten_at: "2025-11-15" },
+  { id: "2", restaurant_name: "Blue Bottle", city: "SF", composite_score: 4.5, cost: 5.5, eaten_at: "2025-12-02" },
+  { id: "3", restaurant_name: "Stumptown", city: "Portland", composite_score: 3.8, cost: 5.0, eaten_at: "2025-12-10" },
+  { id: "4", restaurant_name: "Intelligentsia", city: "LA", composite_score: 4.7, cost: 7.0, eaten_at: "2026-01-05" },
+  { id: "5", restaurant_name: "Verve", city: "Santa Cruz", composite_score: 4.3, cost: null, eaten_at: "2026-02-01" },
 ];
 
 describe("insights data processing", () => {
@@ -101,7 +100,7 @@ describe("insights data processing", () => {
 
     it("skips entries without composite_score", () => {
       const entriesWithNull: Entry[] = [
-        { id: "x", restaurant_name: "NoScore", city: "X", composite_score: null, cost: null, eaten_at: "2026-01-01", subtype_name: null },
+        { id: "x", restaurant_name: "NoScore", city: "X", composite_score: null, cost: null, eaten_at: "2026-01-01" },
       ];
       const top = computeTopRestaurants(entriesWithNull);
       expect(top.length).toBe(0);

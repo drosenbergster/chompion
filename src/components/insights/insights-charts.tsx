@@ -104,12 +104,7 @@ export function InsightsCharts({
   themePrimary,
   themeTint,
 }: InsightsChartsProps) {
-  const hasSubtypes =
-    orderBreakdown.length > 0 &&
-    !(
-      orderBreakdown.length === 1 &&
-      orderBreakdown[0].name === "No order specified"
-    );
+  const hasDishes = orderBreakdown.length > 0;
 
   return (
     <div className="space-y-6 animate-stagger">
@@ -265,12 +260,12 @@ export function InsightsCharts({
           )}
         </ChartCard>
 
-        {/* Subtype Breakdown */}
+        {/* Dish Breakdown */}
         <ChartCard
-          title={`${foodName} Orders`}
-          subtitle={`What ${foodName.toLowerCase()} you order most`}
+          title={`${foodName} Dishes`}
+          subtitle={`What dishes you order most`}
         >
-          {hasSubtypes ? (
+          {hasDishes ? (
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -304,7 +299,7 @@ export function InsightsCharts({
               </ResponsiveContainer>
             </div>
           ) : (
-            <ChartNudge message={`Add subtypes to your ${foodName.toLowerCase()} entries to see what you order most`} />
+            <ChartNudge message={`Log dishes on your ${foodName.toLowerCase()} entries to see what you order most`} />
           )}
         </ChartCard>
       </div>

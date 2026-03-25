@@ -7,25 +7,26 @@ import { FollowButton } from "@/components/profile/follow-button";
 
 import { FOOD_EMOJIS } from "@/lib/constants";
 
-function computeRadar(allEntries: { restaurant_name: string; composite_score: unknown; subtypes: unknown }[]) {
+function computeRadar(allEntries: { restaurant_name: string; composite_score: unknown; entry_dishes: { name: string }[] | null }[]) {
   const count = allEntries.length;
   const scoredEntries = allEntries.filter((e) => e.composite_score);
 
   const uniqueRestaurantCount = new Set(allEntries.map((e) => e.restaurant_name)).size;
   const adventurous = count > 0 ? (uniqueRestaurantCount / count) * 5 : 0;
 
-  const entriesWithSubtype = allEntries.filter(
-    (e) =>
-      e.subtypes &&
-      typeof e.subtypes === "object" &&
-      "name" in (e.subtypes as unknown as Record<string, unknown>)
-  );
-  const uniqueSubtypes = new Set(
-    entriesWithSubtype.map((e) => (e.subtypes as unknown as { name: string }).name)
-  ).size;
-  const diversePalate = entriesWithSubtype.length > 0
-    ? (uniqueSubtypes / entriesWithSubtype.length) * 5
-    : null;
+  const allDishNames: string[] = [];
+  allEntries.forEach((e) => {
+    if (e.entry_dishes) {
+      e.entry_dishes.forEach((d) => {
+        if (d.name) allDishNames.push(d.name);
+      });
+    }
+  });
+  const uniqueDishNames = new Set(allDishNames).size;
+  const diversePalate =
+    allDishNames.length > 0
+      ? (uniqueDishNames / allDishNames.length) * 5
+      : null;
 
   let discerning = 0;
   if (scoredEntries.length >= 2) {
@@ -86,7 +87,7 @@ export default async function PublicProfilePage({
       city,
       composite_score,
       eaten_at,
-      subtypes ( name ),
+      entry_dishes ( name ),
       entry_ratings (
         score,
         rating_category_id,
@@ -275,12 +276,11 @@ export default async function PublicProfilePage({
                   </div>
                   <div className="space-y-3">
                     {topRated.map((entry, i) => {
-                      const subtypeName =
-                        entry.subtypes &&
-                        typeof entry.subtypes === "object" &&
-                        "name" in entry.subtypes
-                          ? (entry.subtypes as { name: string }).name
-                          : null;
+                      const dishNames = (entry.entry_dishes as { name: string }[] | null)
+                        ?.map((d) => d.name)
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join(", ") || null;
 
                       return (
                         <div
@@ -297,9 +297,9 @@ export default async function PublicProfilePage({
                             <div className="text-xs text-gray-400 flex items-center gap-1">
                               <MapPin size={10} />
                               {entry.city}
-                              {subtypeName && (
+                              {dishNames && (
                                 <span className="text-emerald-500 ml-1">
-                                  &middot; {subtypeName}
+                                  &middot; {dishNames}
                                 </span>
                               )}
                             </div>

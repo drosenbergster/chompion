@@ -27,7 +27,6 @@ export default async function EntryDetailPage({
     .select(
       `
       *,
-      subtypes ( id, name ),
       entry_ratings (
         id,
         score,

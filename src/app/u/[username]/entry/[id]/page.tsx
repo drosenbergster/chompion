@@ -46,7 +46,7 @@ export default async function PublicEntryPage({ params }: PageProps) {
       `
       *,
       passion_foods ( name, theme_key ),
-      subtypes ( name ),
+      entry_dishes ( name, rating, sort_order ),
       entry_ratings (
         id,
         score,
@@ -65,10 +65,8 @@ export default async function PublicEntryPage({ params }: PageProps) {
     ? FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic
     : FOOD_EMOJIS.generic;
 
-  const subtypeName =
-    entry.subtypes && typeof entry.subtypes === "object" && "name" in entry.subtypes
-      ? (entry.subtypes as { name: string }).name
-      : null;
+  const entryDishes = ((entry.entry_dishes ?? []) as { name: string; rating: number | null; sort_order: number }[])
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   const ratings = (
     entry.entry_ratings as {
@@ -146,16 +144,9 @@ export default async function PublicEntryPage({ params }: PageProps) {
         <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 animate-fade-in">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl font-bold text-gray-900 truncate">
-                  {entry.restaurant_name}
-                </h1>
-                {subtypeName && (
-                  <span className="flex-shrink-0 text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
-                    {subtypeName}
-                  </span>
-                )}
-              </div>
+              <h1 className="text-2xl font-bold text-gray-900 truncate mb-1">
+                {entry.restaurant_name}
+              </h1>
               <a
                 href={generateMapsLink(entry.restaurant_name, entry.city)}
                 target="_blank"
@@ -215,6 +206,37 @@ export default async function PublicEntryPage({ params }: PageProps) {
             </div>
           )}
         </div>
+
+        {/* Dishes */}
+        {entryDishes.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Dishes
+            </h3>
+            <div className="space-y-2.5">
+              {entryDishes.map((dish, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">{dish.name}</span>
+                  {dish.rating && (
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          size={14}
+                          className={
+                            s <= Number(dish.rating)
+                              ? "fill-amber-400 text-amber-400"
+                              : "fill-none text-gray-200"
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Details row */}
         {(entry.cost || entry.quantity) && (

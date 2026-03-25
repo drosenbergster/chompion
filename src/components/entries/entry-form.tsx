@@ -11,13 +11,12 @@ import {
   Check,
   Star,
   Trash2,
-  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { calculateCompositeScore, generateMapsLink } from "@/lib/utils";
 import { detectCuisine } from "@/lib/cuisine-detect";
-import { FOOD_EMOJIS, DEFAULT_RATING_CATEGORIES } from "@/lib/constants";
+import { FOOD_EMOJIS } from "@/lib/constants";
 import type {
   PassionFood,
   RatingCategory,
@@ -41,6 +40,7 @@ interface EntryFormProps {
   username?: string;
   passionFoods: PassionFood[];
   ratingCategories: RatingCategory[];
+  allFoodCategories: Record<string, RatingCategory[]>;
   existingEntry?: Entry;
   existingRatings?: ExistingRating[];
   existingDishes?: EntryDish[];
@@ -60,7 +60,8 @@ export function EntryForm({
   userId,
   username,
   passionFoods,
-  ratingCategories,
+  ratingCategories: universalCategories,
+  allFoodCategories,
   existingEntry,
   existingRatings,
   existingDishes,
@@ -171,22 +172,33 @@ export function EntryForm({
     setDishes((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  // --- Experience ratings (universal categories) ---
+  // --- Experience ratings (per-food when available, universal fallback) ---
+  function getCategoriesForFood(foodId: string | null): RatingCategory[] {
+    if (foodId && allFoodCategories[foodId]?.length > 0) {
+      return allFoodCategories[foodId];
+    }
+    return universalCategories;
+  }
+
+  const [activeCategories, setActiveCategories] = useState<RatingCategory[]>(() =>
+    getCategoriesForFood(existingEntry?.passion_food_id ?? initialCollectionId)
+  );
+
   const [ratings, setRatings] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    ratingCategories.forEach((cat) => {
+    activeCategories.forEach((cat) => {
       const existing = existingRatings?.find((r) => r.rating_category_id === cat.id);
       initial[cat.id] = existing?.score ?? 0;
     });
     return initial;
   });
 
-  const ratedCategories = ratingCategories
+  const ratedCategories = activeCategories
     .filter((cat) => ratings[cat.id] > 0)
     .map((cat) => ({ score: ratings[cat.id], weight: Number(cat.weight) }));
 
   const compositeScore = ratedCategories.length > 0 ? calculateCompositeScore(ratedCategories) : null;
-  const allRated = ratingCategories.every((cat) => ratings[cat.id] > 0);
+  const allRated = activeCategories.every((cat) => ratings[cat.id] > 0);
 
   // --- Details ---
   const [quantity, setQuantity] = useState(source?.quantity ? String(source.quantity) : "");
@@ -202,7 +214,21 @@ export function EntryForm({
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(
     existingEntry?.passion_food_id ?? initialCollectionId
   );
-  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+
+  function handleCollectionChange(foodId: string | null) {
+    const newCats = getCategoriesForFood(foodId);
+    const oldCats = activeCategories;
+
+    const newRatings: Record<string, number> = {};
+    newCats.forEach((nc) => {
+      const matchByName = oldCats.find((oc) => oc.name === nc.name);
+      newRatings[nc.id] = matchByName ? (ratings[matchByName.id] ?? 0) : 0;
+    });
+
+    setSelectedCollectionId(foodId);
+    setActiveCategories(newCats);
+    setRatings(newRatings);
+  }
 
   const hasLocationDetails = !!(address || phoneNumber || locationNotes);
   const hasEntryDetails = !!(quantity || cost || notes);
@@ -248,7 +274,6 @@ export function EntryForm({
       address: address.trim() || null,
       phone_number: phoneNumber.trim() || null,
       location_notes: locationNotes.trim() || null,
-      subtype_id: null,
       quantity: quantity ? parseInt(quantity) : null,
       cost: cost ? parseFloat(cost) : null,
       notes: notes.trim() || null,
@@ -270,7 +295,7 @@ export function EntryForm({
 
       // Update ratings
       await supabase.from("entry_ratings").delete().eq("entry_id", existingEntry.id);
-      const ratingsToInsert = ratingCategories
+      const ratingsToInsert = activeCategories
         .filter((cat) => ratings[cat.id] > 0)
         .map((cat) => ({
           entry_id: existingEntry.id,
@@ -314,7 +339,7 @@ export function EntryForm({
       }
 
       // Insert ratings
-      const ratingsToInsert = ratingCategories
+      const ratingsToInsert = activeCategories
         .filter((cat) => ratings[cat.id] > 0)
         .map((cat) => ({
           entry_id: entry.id,
@@ -425,6 +450,38 @@ export function EntryForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* COLLECTION — determines rating categories */}
+      {passionFoods.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Collection</h3>
+          <div className="flex flex-wrap gap-2">
+            {passionFoods.map((food) => (
+              <button
+                key={food.id}
+                type="button"
+                onClick={() => handleCollectionChange(food.id)}
+                className={`px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
+                  food.id === selectedCollectionId
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
+              </button>
+            ))}
+            {selectedCollectionId && (
+              <button
+                type="button"
+                onClick={() => handleCollectionChange(null)}
+                className="px-3 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* WHERE section */}
       <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 space-y-4">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Where</h3>
@@ -612,9 +669,16 @@ export function EntryForm({
       {/* EXPERIENCE RATING section */}
       <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-            Rate the Experience
-          </h3>
+          <div>
+            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+              Rate the Experience
+            </h3>
+            {selectedCollectionId && (
+              <p className="text-xs text-emerald-600 mt-0.5">
+                {passionFoods.find((f) => f.id === selectedCollectionId)?.name} categories
+              </p>
+            )}
+          </div>
           {compositeScore !== null && (
             <div className="bg-emerald-600 text-white text-sm font-bold px-3 py-1 rounded-full animate-scale-pop">
               {compositeScore.toFixed(1)} / 5.0
@@ -623,7 +687,7 @@ export function EntryForm({
         </div>
 
         <div className="space-y-3">
-          {ratingCategories.map((cat) => (
+          {activeCategories.map((cat) => (
             <StarRating
               key={cat.id}
               label={cat.name}
@@ -636,7 +700,7 @@ export function EntryForm({
 
         {!allRated && ratedCategories.length > 0 && (
           <p className="text-xs text-gray-400">
-            {ratingCategories.length - ratedCategories.length} unrated (optional)
+            {activeCategories.length - ratedCategories.length} unrated (optional)
           </p>
         )}
       </div>
@@ -713,62 +777,6 @@ export function EntryForm({
           </div>
         </div>
       </details>
-
-      {/* COLLECTION (optional) */}
-      {passionFoods.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-          <button
-            type="button"
-            onClick={() => setShowCollectionPicker(!showCollectionPicker)}
-            className="w-full flex items-center justify-between text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <span>
-              {selectedCollectionId
-                ? `Collection: ${passionFoods.find((f) => f.id === selectedCollectionId)?.name ?? "Unknown"}`
-                : "Add to a collection (optional)"}
-            </span>
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${showCollectionPicker ? "rotate-180" : ""}`}
-            />
-          </button>
-          {showCollectionPicker && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedCollectionId(null);
-                  setShowCollectionPicker(false);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  !selectedCollectionId
-                    ? "bg-emerald-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                None
-              </button>
-              {passionFoods.map((food) => (
-                <button
-                  key={food.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedCollectionId(food.id);
-                    setShowCollectionPicker(false);
-                  }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    food.id === selectedCollectionId
-                      ? "bg-emerald-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {FOOD_EMOJIS[food.theme_key] ?? FOOD_EMOJIS.generic} {food.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {error && (
         <div className="bg-red-50 text-red-600 text-sm rounded-xl px-4 py-3">{error}</div>

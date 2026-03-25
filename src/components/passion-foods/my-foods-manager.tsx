@@ -10,6 +10,7 @@ import {
   FOOD_EMOJIS,
   POPULAR_FOODS,
   DEFAULT_RATING_CATEGORIES,
+  FOOD_CATEGORY_PRESETS,
 } from "@/lib/constants";
 
 interface MyFoodsManagerProps {
@@ -67,7 +68,8 @@ export function MyFoodsManager({
       return;
     }
 
-    const categories = DEFAULT_RATING_CATEGORIES.map((cat, i) => ({
+    const preset = FOOD_CATEGORY_PRESETS[matchedTheme] ?? DEFAULT_RATING_CATEGORIES;
+    const categories = preset.map((cat, i) => ({
       passion_food_id: newFood.id,
       name: cat.name,
       weight: cat.weight,

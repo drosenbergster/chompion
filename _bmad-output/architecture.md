@@ -129,7 +129,7 @@ passion_food/
 | created_at | timestamptz | DEFAULT now() | |
 | updated_at | timestamptz | DEFAULT now() | |
 
-#### `subtypes`
+#### `subtypes` *(deprecated — replaced by entry_dishes)*
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | id | uuid | PK, DEFAULT gen_random_uuid() | |
@@ -138,15 +138,27 @@ passion_food/
 | sort_order | integer | DEFAULT 0 | |
 | created_at | timestamptz | DEFAULT now() | |
 
+#### `entry_dishes`
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | uuid | PK, DEFAULT gen_random_uuid() | |
+| entry_id | uuid | FK → entries.id, ON DELETE CASCADE | |
+| name | text | NOT NULL | e.g., "Margherita" |
+| rating | integer | nullable, CHECK (1-5) | Optional per-dish star rating |
+| sort_order | integer | DEFAULT 0 | |
+
 #### `rating_categories`
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | id | uuid | PK, DEFAULT gen_random_uuid() | |
-| passion_food_id | uuid | FK → passion_foods.id, ON DELETE CASCADE | |
-| name | text | NOT NULL | e.g., "Taste" |
+| user_id | uuid | FK → profiles.id, nullable | For universal (non-food-specific) categories |
+| passion_food_id | uuid | FK → passion_foods.id, ON DELETE CASCADE, nullable | Per-food categories; null = universal fallback |
+| name | text | NOT NULL | e.g., "Taste", "Broth", "Flavor" |
 | weight | numeric(3,2) | NOT NULL, CHECK (weight > 0 AND weight <= 1) | Decimal weight |
 | sort_order | integer | DEFAULT 0 | |
 | created_at | timestamptz | DEFAULT now() | |
+
+Per-food categories are auto-seeded from `FOOD_CATEGORY_PRESETS` (12 food-specific presets). The entry form prefers per-food categories when a collection is selected, falling back to universal categories.
 
 #### `entries`
 | Column | Type | Constraints | Notes |
@@ -159,7 +171,7 @@ passion_food/
 | address | text | nullable | |
 | phone_number | text | nullable | |
 | location_notes | text | nullable | Hours, tips, etc. |
-| subtype_id | uuid | FK → subtypes.id, ON DELETE SET NULL, nullable | |
+| subtype_id | uuid | FK → subtypes.id, ON DELETE SET NULL, nullable | Deprecated; dishes now in entry_dishes |
 | quantity | integer | nullable, CHECK (quantity > 0) | |
 | cost | numeric(8,2) | nullable, CHECK (cost >= 0) | |
 | composite_score | numeric(3,2) | nullable | Calculated weighted average |

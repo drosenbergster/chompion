@@ -45,8 +45,7 @@ export default async function InsightsPage({
       cost,
       quantity,
       eaten_at,
-      subtype_id,
-      subtypes ( name ),
+      entry_dishes ( name ),
       entry_ratings (
         score,
         rating_categories ( name, weight )
@@ -147,14 +146,17 @@ export default async function InsightsPage({
       return { month: label, count };
     });
 
-  // 3. Subtype breakdown
+  // 3. Dish breakdown
   const orderCounts: Record<string, number> = {};
   allEntries.forEach((e) => {
-    const name =
-      e.subtypes && typeof e.subtypes === "object" && "name" in e.subtypes
-        ? (e.subtypes as { name: string }).name
-        : "No order specified";
-    orderCounts[name] = (orderCounts[name] ?? 0) + 1;
+    const dishes = e.entry_dishes as { name: string }[] | null;
+    if (dishes && dishes.length > 0) {
+      dishes.forEach((d) => {
+        if (d.name) {
+          orderCounts[d.name] = (orderCounts[d.name] ?? 0) + 1;
+        }
+      });
+    }
   });
   const orderBreakdown = Object.entries(orderCounts)
     .map(([name, count]) => ({ name, count }))
@@ -189,22 +191,20 @@ export default async function InsightsPage({
     ? (uniqueRestaurantCount / entryCount) * 5
     : 0;
 
-  // Diverse Palate: unique subtypes / entries with subtypes
-  const entriesWithSubtype = allEntries.filter(
-    (e) =>
-      e.subtypes &&
-      typeof e.subtypes === "object" &&
-      "name" in (e.subtypes as unknown as Record<string, unknown>) &&
-      (e.subtypes as unknown as { name: string }).name !== "No order specified"
-  );
-  const uniqueSubtypes = new Set(
-    entriesWithSubtype.map(
-      (e) => (e.subtypes as unknown as { name: string }).name
-    )
-  ).size;
+  // Diverse Palate: unique dish names / total dishes logged
+  const allDishNames: string[] = [];
+  allEntries.forEach((e) => {
+    const dishes = e.entry_dishes as { name: string }[] | null;
+    if (dishes) {
+      dishes.forEach((d) => {
+        if (d.name) allDishNames.push(d.name);
+      });
+    }
+  });
+  const uniqueDishNames = new Set(allDishNames).size;
   const diversePalate =
-    entriesWithSubtype.length > 0
-      ? (uniqueSubtypes / entriesWithSubtype.length) * 5
+    allDishNames.length > 0
+      ? (uniqueDishNames / allDishNames.length) * 5
       : null;
 
   // Discerning: score standard deviation normalized (0-5)

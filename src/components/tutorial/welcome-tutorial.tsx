@@ -2,11 +2,11 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { SlidersHorizontal, ChevronRight, ChevronLeft, X, AtSign } from "lucide-react";
+import { SlidersHorizontal, ChevronRight, ChevronLeft, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { POPULAR_FOODS, DEFAULT_RATING_CATEGORIES } from "@/lib/constants";
+import { POPULAR_FOODS, DEFAULT_RATING_CATEGORIES, FOOD_CATEGORY_PRESETS } from "@/lib/constants";
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
   const router = useRouter();
@@ -16,11 +16,10 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
   const [selectedFood, setSelectedFood] = useState<string | null>(null);
   const [customFood, setCustomFood] = useState("");
   const [createdFoodName, setCreatedFoodName] = useState("");
+  const [createdCategoryNames, setCreatedCategoryNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [username, setUsername] = useState("");
-  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
 
   const foodName = selectedFood ?? customFood.trim();
   const isLast = step === TOTAL_STEPS - 1;
@@ -72,7 +71,8 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
       return false;
     }
 
-    const categories = DEFAULT_RATING_CATEGORIES.map((cat, i) => ({
+    const preset = FOOD_CATEGORY_PRESETS[matchedTheme] ?? DEFAULT_RATING_CATEGORIES;
+    const categories = preset.map((cat, i) => ({
       passion_food_id: passionFood.id,
       name: cat.name,
       weight: cat.weight,
@@ -90,64 +90,7 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
     }
 
     setCreatedFoodName(foodName);
-    setLoading(false);
-    return true;
-  }
-
-  async function checkUsername(value: string) {
-    const cleaned = value.toLowerCase().replace(/[^a-z0-9_]/g, "");
-    setUsername(cleaned);
-
-    if (cleaned.length < 3) {
-      setUsernameStatus(cleaned.length > 0 ? "invalid" : "idle");
-      return;
-    }
-
-    setUsernameStatus("checking");
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("username", cleaned)
-      .maybeSingle();
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (data && data.id !== user?.id) {
-      setUsernameStatus("taken");
-    } else {
-      setUsernameStatus("available");
-    }
-  }
-
-  async function saveUsername(): Promise<boolean> {
-    if (!username || username.length < 3) return true;
-    if (usernameStatus === "taken" || usernameStatus === "invalid") {
-      setError("Pick a valid, available username to continue");
-      return false;
-    }
-
-    setLoading(true);
-    setError(null);
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return true; }
-
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({ username })
-      .eq("id", user.id);
-
-    if (updateError) {
-      if (updateError.message.includes("unique")) {
-        setUsernameStatus("taken");
-        setError("That username is already taken");
-      } else {
-        setError(updateError.message);
-      }
-      setLoading(false);
-      return false;
-    }
-
+    setCreatedCategoryNames(preset.map((c) => c.name));
     setLoading(false);
     return true;
   }
@@ -155,10 +98,6 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
   async function handleNext() {
     if (step === 1) {
       const ok = await createPassionFood();
-      if (!ok) return;
-    }
-    if (step === 3) {
-      const ok = await saveUsername();
       if (!ok) return;
     }
     setStep(step + 1);
@@ -206,9 +145,8 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
   const canAdvance =
     step === 0 ||
     step === 2 ||
-    step === 4 ||
-    (step === 1 && !!foodName) ||
-    (step === 3 && (username.length === 0 || usernameStatus === "available"));
+    step === 3 ||
+    (step === 1 && !!foodName);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -235,16 +173,8 @@ export function WelcomeTutorial({ onComplete }: { onComplete?: () => void }) {
                 error={error}
               />
             )}
-            {step === 2 && <StepRankings />}
-            {step === 3 && (
-              <StepClaimProfile
-                username={username}
-                usernameStatus={usernameStatus}
-                onChangeUsername={checkUsername}
-                error={error}
-              />
-            )}
-            {step === 4 && <StepReady foodName={createdFoodName} />}
+            {step === 2 && <StepRankings foodName={createdFoodName} categoryNames={createdCategoryNames} />}
+            {step === 3 && <StepReady foodName={createdFoodName} />}
           </div>
           {step === 1 && (
             <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent" />
@@ -401,7 +331,12 @@ function StepPickFood({
   );
 }
 
-function StepRankings() {
+function StepRankings({ foodName, categoryNames }: { foodName: string; categoryNames: string[] }) {
+  const names = categoryNames.length > 0 ? categoryNames : DEFAULT_RATING_CATEGORIES.map((c) => c.name);
+  const formatted = names.length <= 2
+    ? names.join(" and ")
+    : names.slice(0, -1).join(", ") + ", and " + names[names.length - 1];
+
   return (
     <div className="px-8 pt-10 pb-6 text-center">
       <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-blue-100 text-blue-600">
@@ -411,71 +346,18 @@ function StepRankings() {
         Make Rankings Yours
       </h2>
       <p className="text-gray-500 text-sm leading-relaxed">
-        We set up five rating categories&mdash;Taste, Quality, Ambiance,
-        Presentation, and Value. You can customize these anytime in Settings.
-      </p>
-    </div>
-  );
-}
-
-function StepClaimProfile({
-  username,
-  usernameStatus,
-  onChangeUsername,
-  error,
-}: {
-  username: string;
-  usernameStatus: "idle" | "checking" | "available" | "taken" | "invalid";
-  onChangeUsername: (value: string) => void;
-  error: string | null;
-}) {
-  return (
-    <div className="px-8 pt-10 pb-6 text-center">
-      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 bg-purple-100 text-purple-600">
-        <AtSign size={28} />
-      </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-2">
-        Claim Your Profile
-      </h2>
-      <p className="text-gray-500 text-sm leading-relaxed mb-5">
-        Pick a username so friends can find you and see your public profile.
-      </p>
-
-      <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => onChangeUsername(e.target.value)}
-          placeholder="your_username"
-          maxLength={30}
-          className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none transition-all text-gray-900 placeholder-gray-300 text-sm"
-        />
-      </div>
-
-      <div className="mt-2 h-5 text-xs">
-        {usernameStatus === "checking" && (
-          <span className="text-gray-400">Checking...</span>
+        {foodName ? (
+          <>
+            We set up {names.length} rating categories tailored for{" "}
+            <span className="font-semibold text-gray-700">{foodName}</span>
+            &mdash;{formatted}. You can rename or adjust weights anytime in Settings.
+          </>
+        ) : (
+          <>
+            We set up {names.length} rating categories&mdash;{formatted}.
+            You can customize these anytime in Settings.
+          </>
         )}
-        {usernameStatus === "available" && (
-          <span className="text-green-600">Available!</span>
-        )}
-        {usernameStatus === "taken" && (
-          <span className="text-red-500">Already taken</span>
-        )}
-        {usernameStatus === "invalid" && (
-          <span className="text-amber-600">At least 3 characters, letters, numbers, underscores</span>
-        )}
-      </div>
-
-      {error && (
-        <div className="mt-2 bg-red-50 text-red-600 text-xs rounded-xl px-3 py-2">
-          {error}
-        </div>
-      )}
-
-      <p className="mt-3 text-[11px] text-gray-300">
-        You can skip this and change it later in Settings.
       </p>
     </div>
   );

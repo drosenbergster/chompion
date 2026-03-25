@@ -44,8 +44,8 @@ Mobile-responsive web application. No native mobile app required for MVP -- the 
 
 ### 3.2 Onboarding Flow
 1. User signs up / logs in
-2. Prompted to declare their first **passion food** (e.g., "Burritos")
-3. Optionally define subtypes and customize rating categories
+2. Optional username claim on onboarding page
+3. Welcome tutorial: pick a passion food → food-specific rating categories are auto-seeded → brief explanation of the rating system → ready to log
 4. Taken to their dashboard -- ready to log their first entry
 
 ### 3.3 Profile
@@ -58,17 +58,15 @@ Mobile-responsive web application. No native mobile app required for MVP -- the 
 
 ## 4. Core Features
 
-### 4.1 Passion Food Declaration
+### 4.1 Passion Food Collections
 
-Users declare what food(s) they are tracking. Each passion food is its own "space" with separate entries, charts, and data.
+Users declare what food(s) they are tracking. Each passion food is its own "collection" with separate entries, charts, rating categories, and data.
 
 - **Multiple passion foods** supported per account (e.g., Burritos AND Pizza)
 - Each passion food has its own dedicated page/tab
-- User-defined **subtypes** per passion food:
-  - Example: Passion food = "Pizza" → Subtypes: "Neapolitan," "NY-style," "Deep Dish," "Detroit"
-  - Example: Passion food = "Burritos" → Subtypes: "Carne Asada," "Al Pastor," "Breakfast Burrito"
-- Subtypes are fully user-defined (free text, add/edit/delete)
+- Each collection gets **food-specific rating categories** auto-seeded from 12 built-in presets (e.g., Coffee → Flavor, Body, Aroma, Presentation, Value)
 - The level of specificity is up to the user (could track "Mexican Food" broadly or "Burritos" specifically)
+- **Dishes** are logged as free-text per entry (e.g., "Margherita," "Pepperoni") with optional per-dish star ratings
 
 ### 4.2 Entry Logging
 
@@ -82,7 +80,7 @@ Each entry captures one instance of eating the passion food. The entry form incl
 | **Phone Number** | Text input | No | Restaurant phone number (manually entered) |
 | **Hours / Notes on Location** | Text input | No | Any useful info about the spot (hours, reservations, etc.) |
 | **Map Link** | Auto-generated | Auto | Free Google Maps search link generated from name + city (see below) |
-| **Subtype** | Dropdown (user-defined list) | No | Which variant of the passion food |
+| **Dishes** | Free-text with optional per-dish stars | Yes (1+) | What was ordered (e.g., "Margherita", "Garlic Knots") |
 | **Quantity** | Number | No | How many consumed |
 | **Cost** | Currency ($) | No | How much was spent |
 | **Date & Time** | Datetime picker | Yes | **Auto-defaults to current date/time** on entry creation; user can manually adjust |
@@ -99,11 +97,11 @@ Each entry captures one instance of eating the passion food. The entry form incl
 
 This is a standout feature. Users define their own rating criteria and weights.
 
-**Setup (in Settings, per passion food):**
-1. User creates rating categories (e.g., "Taste," "Presentation," "Value," "Portion Size")
-2. User assigns a **weight** (percentage) to each category
+**Setup (auto-seeded per passion food, customizable in Settings):**
+1. When a new collection is created, rating categories are auto-seeded from **food-specific presets** (12 built-in: Pizza, Burgers, Coffee, Tacos, Sushi, Pasta, Ramen, Wine, Ice Cream, Sandwiches, Burritos, Cheese). Custom/unknown foods get a generic default (Taste, Quality, Ambiance, Presentation, Value).
+2. User can rename, reweight, add, or remove categories in Settings
 3. Weights must sum to 100%
-4. Default starter template: Taste (40%), Value (30%), Presentation (30%) -- user can modify
+4. Example presets: Coffee → Flavor (30%), Body (20%), Aroma (20%), Presentation (15%), Value (15%); Ramen → Broth (30%), Noodles (25%), Toppings (20%), Taste (15%), Value (10%)
 
 **On Each Entry:**
 1. Each rating category is displayed with a **1-5 star** selector
@@ -125,10 +123,10 @@ This is a standout feature. Users define their own rating criteria and weights.
   - Filterable by subtype, city, date range
 
 ### 4.5 Category / Settings Management
-- **Add / Edit / Remove** subtypes at any time
-- **Add / Edit / Remove / Reweight** rating categories at any time
+- **Add / Edit / Remove / Reweight** rating categories at any time per collection
 - Changes to rating weights apply to **new entries only** (historical entries retain their original composite calculation)
 - Option to **recalculate** historical entries with new weights (with confirmation prompt)
+- The entry form dynamically loads the selected collection's categories; switching collections in the form swaps the rating categories and preserves scores for matching category names
 
 ---
 
@@ -151,7 +149,7 @@ Each passion food has its own dashboard with the following visualizations:
 |---------------|-------------|
 | **Location Heat Map** | Map showing where entries are concentrated by city (bubble/dot sizes by frequency) |
 | **Frequency Over Time** | Line/bar chart showing how often the user eats their passion food over weeks/months |
-| **Subtype Breakdown** | Pie/donut chart showing distribution of subtypes |
+| **Dish Breakdown** | Pie/donut chart showing distribution of dishes ordered |
 | **Spending Over Time** | Line chart of cumulative or periodic spending |
 | **Top Restaurants** | Bar chart ranking restaurants by frequency, average rating, or total visits |
 | **Rating Distribution** | Histogram of composite scores |
@@ -253,10 +251,10 @@ Ship with **8-10 pre-built food themes** for common passion foods:
 
 **Flow 1: Log a New Entry**
 1. Tap "+" button (persistent in nav)
-2. Select which passion food (if multiple)
+2. Select collection (shown at top of form; determines which rating categories appear)
 3. Enter restaurant name and city → map link auto-generates
-4. Select subtype from dropdown
-5. Rate each category (stars)
+4. Add dishes (free-text names with optional per-dish star ratings)
+5. Rate each experience category (food-specific stars, e.g., Broth/Noodles/Toppings for Ramen)
 6. See composite score calculate in real-time
 7. Optionally add quantity, cost, notes
 8. Date/time pre-filled, adjustable
@@ -297,11 +295,18 @@ Ship with **8-10 pre-built food themes** for common passion foods:
 - is_default (boolean)
 - created_at
 
-**subtypes**
+**subtypes** *(deprecated — replaced by entry_dishes)*
 - id (UUID, PK)
 - passion_food_id (FK → passion_foods)
 - name (e.g., "Al Pastor")
 - created_at
+
+**entry_dishes**
+- id (UUID, PK)
+- entry_id (FK → entries)
+- name (text, e.g., "Margherita")
+- rating (integer 1-5, nullable)
+- sort_order (integer)
 
 **rating_categories**
 - id (UUID, PK)

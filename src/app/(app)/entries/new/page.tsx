@@ -65,6 +65,25 @@ export default async function NewEntryPage({
     ratingCategories = refetched ?? [];
   }
 
+  // Get per-food rating categories for all passion foods
+  const allFoodCategories: Record<string, typeof ratingCategories> = {};
+  if (passionFoods && passionFoods.length > 0) {
+    const foodIds = passionFoods.map((f) => f.id);
+    const { data: foodCats } = await supabase
+      .from("rating_categories")
+      .select("*")
+      .in("passion_food_id", foodIds)
+      .order("sort_order");
+
+    (foodCats ?? []).forEach((cat) => {
+      if (!cat.passion_food_id) return;
+      if (!allFoodCategories[cat.passion_food_id]) {
+        allFoodCategories[cat.passion_food_id] = [];
+      }
+      allFoodCategories[cat.passion_food_id]!.push(cat);
+    });
+  }
+
   // Prefill from previous entry
   let prefillEntry: Entry | undefined;
   let prefillDishes: EntryDish[] | undefined;
@@ -123,6 +142,7 @@ export default async function NewEntryPage({
         username={profile?.username}
         passionFoods={passionFoods ?? []}
         ratingCategories={ratingCategories ?? []}
+        allFoodCategories={allFoodCategories as Record<string, import("@/lib/supabase/types").RatingCategory[]>}
         prefillEntry={prefillEntry}
         prefillDishes={prefillDishes}
         previousCities={previousCities}
